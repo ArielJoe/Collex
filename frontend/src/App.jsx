@@ -1,10 +1,18 @@
-import { Button } from "@/components/ui/button";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { LoginForm } from "./components/ui/login-form";
+import { RegisterForm } from "./components/ui/register-form";
 
 function App() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-svh">
-      <Button>Click me!</Button>
-    </div>
+    <Router>
+      <div className="flex flex-col items-center justify-center min-h-svh">
+        <Routes>
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/register" element={<RegisterForm />} />
+          <Route path="/" element={<LoginForm />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

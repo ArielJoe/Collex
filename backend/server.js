@@ -1,27 +1,27 @@
 import express from "express";
 import { connectDB } from "./config/db.js";
 import dotenv from "dotenv";
-import User from "./model/User.js";
+import cors from "cors"; // Add CORS to allow frontend requests
+import authRoutes from "./routes/auth.js";
 
 dotenv.config();
 
 const app = express();
 
+// Middleware
+app.use(express.json()); // Parse JSON bodies
+app.use(cors()); // Enable CORS for all routes
+
+// Root endpoint
 app.get("/", (req, res) => {
   res.send("Server is ready");
 });
 
-app.get("/user", async (req, res) => {
-  try {
-    const users = await User.find();
-    res.status(200).json(users);
-  } catch (err) {
-    console.error("Error fetching users:", err);
-    res.status(500).json({ message: "Server error while fetching users" });
-  }
-});
+app.use("/api", authRoutes);
 
-app.listen(5000, () => {
+const PORT = 5000;
+
+app.listen(PORT, () => {
   connectDB();
-  console.log("Server started at http://localhost:5000");
+  console.log(`Server started at http://localhost:${PORT}`);
 });

@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 import { faker } from "@faker-js/faker";
 import dotenv from "dotenv";
+import bcrypt from "bcryptjs";
 
-import User from "../model/user.js";
+import User from "../model/User.js";
 import Event from "../model/event.js";
 import Registration from "../model/registration.js";
 import Payment from "../model/payment.js";
@@ -31,7 +32,7 @@ const seedDatabase = async () => {
     const users = await User.insertMany([
       {
         email: "admin@example.com",
-        password: "admin123",
+        password: await bcrypt.hash("admin123", 10),
         full_name: "Admin User",
         phone_number: faker.phone.number(),
         role: "admin",
