@@ -1,0 +1,72 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start React (Vite)",
+      "type": "shell",
+      "command": "cd frontend; npm run dev",
+      "options": {
+        "shell": {
+          "executable": "powershell.exe",
+          "args": [
+            "-NoProfile",
+            "-Command"
+          ]
+        }
+      },
+      "presentation": {
+        "panel": "dedicated",
+        "group": "vite-terminal"
+      }
+    },
+    {
+      "label": "Start Node.js Server",
+      "type": "shell",
+      "command": "cd backend; node server.js",
+      "options": {
+        "shell": {
+          "executable": "powershell.exe",
+          "args": [
+            "-NoProfile",
+            "-Command"
+          ]
+        }
+      },
+      "presentation": {
+        "panel": "dedicated",
+        "group": "node-terminal"
+      }
+    },
+    {
+      "label": "Start Laravel",
+      "type": "shell",
+      "command": "cd frontend; php artisan serve",
+      "options": {
+        "shell": {
+          "executable": "powershell.exe",
+          "args": [
+            "-NoProfile",
+            "-Command"
+          ]
+        }
+      },
+      "presentation": {
+        "panel": "dedicated",
+        "group": "laravel-terminal"
+      }
+    },
+    {
+      "label": "Start All Services",
+      "dependsOn": [
+        "Start React (Vite)",
+        "Start Node.js Server",
+        "Start Laravel"
+      ],
+      "dependsOrder": "parallel",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
