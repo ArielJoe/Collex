@@ -32,7 +32,7 @@ const seedDatabase = async () => {
     const users = await User.insertMany([
       {
         email: "admin@example.com",
-        password: await bcrypt.hash("admin123", 10),
+        password: await bcrypt.hash("123", 10),
         full_name: "Admin User",
         phone_number: faker.phone.number(),
         role: "admin",
@@ -40,7 +40,7 @@ const seedDatabase = async () => {
       },
       {
         email: "organizer@example.com",
-        password: "organizer123",
+        password: await bcrypt.hash("123", 10),
         full_name: "Event Organizer",
         phone_number: faker.phone.number(),
         role: "organizer",
@@ -48,7 +48,7 @@ const seedDatabase = async () => {
       },
       {
         email: "member@example.com",
-        password: "member123",
+        password: await bcrypt.hash("123", 10),
         full_name: "Event Member",
         phone_number: faker.phone.number(),
         role: "member",
@@ -56,7 +56,7 @@ const seedDatabase = async () => {
       },
       {
         email: "finance@example.com",
-        password: "finance123",
+        password: await bcrypt.hash("123", 10),
         full_name: "Finance User",
         phone_number: faker.phone.number(),
         role: "finance",
@@ -64,7 +64,7 @@ const seedDatabase = async () => {
       },
       {
         email: "guest@example.com",
-        password: "guest123",
+        password: await bcrypt.hash("123", 10),
         full_name: "Guest User",
         phone_number: faker.phone.number(),
         role: "guest",

@@ -18,6 +18,14 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // Store user information in the session
+    // req.session.user = {
+    //   id: user._id,
+    //   email: user.email,
+    //   full_name: user.full_name,
+    //   role: user.role,
+    // };
+
     res.status(200).json({
       message: "Login successful",
       user: {
@@ -38,10 +46,12 @@ router.post("/register", async (req, res) => {
   const { email, password, full_name, phone_number, role } = req.body;
 
   // Input validation
-  if (!email || !password || !full_name) {
+  if (!email || !password || !full_name || !phone_number) {
     return res
       .status(400)
-      .json({ message: "Email, password, and full name are required" });
+      .json({
+        message: "Email, password, full name, and phone number are required",
+      });
   }
 
   // Email format validation

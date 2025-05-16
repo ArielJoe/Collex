@@ -2,24 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Start React (Vite)",
-      "type": "shell",
-      "command": "cd frontend; npm run dev",
-      "options": {
-        "shell": {
-          "executable": "powershell.exe",
-          "args": [
-            "-NoProfile",
-            "-Command"
-          ]
-        }
-      },
-      "presentation": {
-        "panel": "dedicated",
-        "group": "vite-terminal"
-      }
-    },
-    {
       "label": "Start Node.js Server",
       "type": "shell",
       "command": "cd backend; node server.js",
@@ -56,11 +38,29 @@
       }
     },
     {
+      "label": "Start Tailwind",
+      "type": "shell",
+      "command": "cd frontend; npm run dev",
+      "options": {
+        "shell": {
+          "executable": "powershell.exe",
+          "args": [
+            "-NoProfile",
+            "-Command"
+          ]
+        }
+      },
+      "presentation": {
+        "panel": "dedicated",
+        "group": "tailwind-terminal"
+      }
+    },
+    {
       "label": "Start All Services",
       "dependsOn": [
-        "Start React (Vite)",
         "Start Node.js Server",
-        "Start Laravel"
+        "Start Laravel",
+        "Start Tailwind"
       ],
       "dependsOrder": "parallel",
       "group": {

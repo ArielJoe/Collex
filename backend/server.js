@@ -8,7 +8,6 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
 app.use(express.json()); // Parse JSON bodies
 app.use(cors()); // Enable CORS for all routes
 
