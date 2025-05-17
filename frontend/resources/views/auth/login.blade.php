@@ -24,6 +24,13 @@
                     @error('error')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
+                    @if (true)
+                        <div class="p-4 mb-4 text-green-800 bg-green-100 rounded-lg">
+                            <strong>{{ session('success') }}</strong><br>
+                            Email: {{ session('email') }}<br>
+                            Role: {{ session('role') }}
+                        </div>
+                    @endif
                 </div>
 
                 <button type="submit" class="w-full bg-primary text-white p-2 rounded-md">Login</button>

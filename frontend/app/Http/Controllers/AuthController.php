@@ -28,11 +28,11 @@ class AuthController extends Controller
         if ($response->successful()) {
             $data = $response->json();
 
-            Session::put('email', $data['email'] ?? null);
-            Session::put('role', $data['role'] ?? null);
+            Session::put('email', $data['user']['email'] ?? null);
+            Session::put('role', $data['user']['role'] ?? null);
 
-            $successMessage = $data['message'];
-            return redirect()->route('dashboard')->with('success', $successMessage);
+            $successMessage = $data['message'] ?? 'Login successful';
+            return back()->with('success', $successMessage);
         }
 
         $errorMessage = $response->json('message');
