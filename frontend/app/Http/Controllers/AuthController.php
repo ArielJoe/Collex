@@ -3,14 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
-    public function index()
+    public function login_()
     {
         return view('auth.login');
+    }
+
+    public function register_()
+    {
+        return view('auth.register');
     }
 
     public function login(Request $request)
@@ -37,5 +43,18 @@ class AuthController extends Controller
 
         $errorMessage = $response->json('message');
         return back()->withErrors(['error' => $errorMessage])->withInput();
+    }
+
+    public function register(Request $request) {}
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect('/');
     }
 }
