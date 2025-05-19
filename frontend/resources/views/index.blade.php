@@ -1,7 +1,7 @@
 @extends('components.layout')
 
 @section('title')
-    Tixin - Event Discovery Platform
+    Event Discovery Platform
 @endsection
 
 @push('style')
@@ -24,45 +24,59 @@
                 <ul class="flex items-center">
                     <!-- Events Link -->
                     <li>
-                        <a class="px-4 py-2 text-lg {{ request()->is('/') ? 'text-red-600 font-bold' : 'text-gray-600' }} hover:text-red-600 transition"
+                        <a class="px-4 py-2 text-lg {{ request()->is('/') ? 'rounded-lg text-primary font-bold hover:bg-primary hover:text-white' : 'text-gray-600' }} hover:text-red-600 transition"
                             href="{{ url('/') }}">Events</a>
                     </li>
                 </ul>
 
                 <!-- Login/Register Buttons -->
                 <div class="flex items-center gap-3">
-                    <div class="relative">
-                        <button
-                            class="flex items-center border border-gray-500 text-gray-500 px-3 py-2 rounded hover:bg-gray-500 hover:text-white transition"
-                            id="userDropdown">
-                            <i class="fas fa-user-circle"></i>
-                        </button>
-                        <ul class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg hidden" id="userDropdownMenu">
-                            <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:rounded-lg"
-                                    href="#"><i class="fas fa-user mr-2"></i>Profile</a></li>
-                            <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:rounded-lg"
-                                    href="#"><i class="fas fa-ticket-alt mr-2"></i>My Tickets</a></li>
-                            <li>
-                                <hr class="border-gray-200">
-                            </li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit"
-                                        class="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 hover:rounded-lg"><i
-                                            class="fas fa-sign-out-alt mr-2"></i>Logout</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                    <a href="{{ route('login') }}"
-                        class="border border-gray-500 text-gray-500 px-3 py-2 rounded hover:bg-gray-500 hover:text-white transition">
-                        <i class="fas fa-sign-in-alt mr-1"></i> Log in
-                    </a>
-                    <a href="{{ route('register') }}"
-                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
-                        <i class="fas fa-user-plus mr-1"></i> Sign Up
-                    </a>
+                    @if (session('email'))
+                        <div class="relative">
+                            <button
+                                class="cursor-pointer flex items-center border border-gray-500 text-gray-500 px-3 py-2 rounded hover:bg-gray-500 hover:text-white transition"
+                                id="userDropdown">
+                                <i class="fas fa-user-circle mr-2"></i>
+                                <p>
+                                    {{ session('full_name') }}
+                                </p>
+                            </button>
+                            <ul class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg hidden"
+                                id="userDropdownMenu">
+                                <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:rounded-lg"
+                                        href="#"><i class="fas fa-user mr-2"></i>Profile</a></li>
+                                @if (session('role') == 'member')
+                                    <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:rounded-lg"
+                                            href="#"><i class="fas fa-ticket-alt mr-2"></i>My Tickets</a></li>
+                                @endif
+                                @if (session('role') == 'admin')
+                                    <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:rounded-lg"
+                                            href="/admin"><i class="fa-solid fa-table-columns mr-2"></i>Dashboard</a></li>
+                                @endif
+                                <li>
+                                    <hr class="border-gray-200">
+                                </li>
+                                <li>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit"
+                                            class="cursor-pointer block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 hover:rounded-lg"><i
+                                                class="fas fa-sign-out-alt mr-2"></i>Logout</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    @endif
+                    @if (!session('email'))
+                        <a href="{{ route('login') }}"
+                            class="border border-gray-500 text-gray-500 px-3 py-2 rounded hover:bg-gray-500 hover:text-white transition">
+                            <i class="fas fa-sign-in-alt mr-1"></i> Log in
+                        </a>
+                        <a href="{{ route('register') }}"
+                            class="bg-primary text-white px-4 py-2 rounded hover:bg-red-700 transition">
+                            <i class="fas fa-user-plus mr-1"></i> Sign Up
+                        </a>
+                    @endif
                 </div>
             </div>
 
@@ -183,7 +197,7 @@
                         </div>
                         <div class="w-32">
                             <button type="submit"
-                                class="w-full bg-red-600 text-white rounded px-4 py-2 hover:bg-red-700 transition">
+                                class="w-full bg-primary text-white rounded px-4 py-2 hover:bg-red-700 transition">
                                 <i class="fas fa-search mr-2"></i> Search
                             </button>
                         </div>
@@ -193,7 +207,7 @@
                 <!-- Events Section -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2
-                        class="text-blue-900 font-semibold mb-6 pb-3 relative after:absolute after:bottom-0 after:left-0 after:w-12 after:h-1 after:bg-red-600">
+                        class="text-blue-900 font-semibold mb-6 pb-3 relative after:absolute after:bottom-0 after:left-0 after:w-12 after:h-1 after:bg-primary">
                         UPCOMING EVENTS</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         @for ($i = 0; $i < 6; $i++)
@@ -212,7 +226,7 @@
                                     <div class="flex justify-between items-center pt-3 border-t border-gray-100">
                                         <span class="text-red-600 font-semibold">FREE</span>
                                         <button
-                                            class="bg-red-50 text-red-600 text-sm font-medium px-4 py-1 rounded-full hover:bg-red-600 hover:text-white transition">
+                                            class="bg-red-50 text-primary text-sm font-medium px-4 py-1 rounded-full hover:bg-primary hover:text-white transition">
                                             Details
                                         </button>
                                     </div>
@@ -263,7 +277,36 @@
                 </div>
             </div>
         </div>
+
     </div>
+    <footer class="bg-white mt-auto border-t-1">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="text-sm text-gray-600">
+                    &copy; {{ date('Y') }} Tixin. All rights reserved.
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="/"
+                        class="text-sm text-gray-600 hover:bg-primary/20 hover:text-red-600 px-3 py-2 rounded-md transition duration-200">
+                        Home
+                    </a>
+                    <a href="#"
+                        class="text-sm text-gray-600 hover:bg-primary/20 hover:text-red-600 px-3 py-2 rounded-md transition duration-200">
+                        Terms
+                    </a>
+                    <a href="#"
+                        class="text-sm text-gray-600 hover:bg-primary/20 hover:text-red-600 px-3 py-2 rounded-md transition duration-200">
+                        Privacy Policy
+                    </a>
+                </div>
+                @if (auth()->check() && session('role'))
+                    <div class="text-sm text-gray-600">
+                        Logged in as <span class="font-semibold capitalize">{{ session('role') }}</span>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </footer>
 @endsection
 
 @push('script')

@@ -1,7 +1,7 @@
 @extends('components.layout')
 
 @section('title')
-    Tixin - Register
+    Register
 @endsection
 
 @push('style')
@@ -11,7 +11,7 @@
 @section('content')
     <div class="flex justify-center items-center min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
         <div class="w-full max-w-lg bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="bg-red-600 text-white text-center py-4">
+            <div class="bg-primary text-white text-center py-4">
                 <h2 class="text-2xl font-semibold">Create Account</h2>
                 <p class="mt-1 opacity-90 text-sm">Join Tixin today</p>
             </div>
@@ -44,9 +44,9 @@
                             <input type="text" name="full_name" id="full_name" value="{{ old('full_name') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-200 focus:border-red-600 outline-none transition @error('full_name') @enderror"
                                 placeholder="John Doe" required autofocus>
-                            @error('full_name')
+                            {{-- @error('full_name')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            @enderror --}}
                         </div>
 
                         <div>
@@ -58,9 +58,9 @@
                                     class="flex-1 px-4 py-3 border-none rounded-r-lg outline-none"
                                     placeholder="812 3456 7890" required>
                             </div>
-                            @error('phone_number')
+                            {{-- @error('phone_number')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            @enderror --}}
                         </div>
 
                         <div class="sm:col-span-2">
@@ -68,9 +68,9 @@
                             <input type="email" name="email" id="email" value="{{ old('email') }}"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-200 focus:border-red-600 outline-none transition @error('email') @enderror"
                                 placeholder="your@email.com" required>
-                            @error('email')
+                            {{-- @error('email')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            @enderror --}}
                         </div>
 
                         <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -83,9 +83,9 @@
                                     <div class="h-full w-0 transition-all duration-200" id="password-strength-bar"></div>
                                 </div>
                                 <p class="mt-1 text-xs text-gray-600">8+ chars with A-Z, a-z & 0-9</p>
-                                @error('password')
+                                {{-- @error('password')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @enderror --}}
                             </div>
 
                             <div>
@@ -107,7 +107,7 @@
                         </div>
 
                         <button type="submit"
-                            class="sm:col-span-2 mt-4 w-full py-3 px-4 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 hover:-translate-y-0.5 transition-transform duration-200">
+                            class="sm:col-span-2 mt-4 w-full py-3 px-4 rounded-lg bg-primary text-white font-semibold hover:-translate-y-0.5 transition-transform duration-200">
                             Create Account
                         </button>
                     </div>

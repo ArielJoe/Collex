@@ -3,6 +3,7 @@ import { connectDB } from "./config/db.js";
 import dotenv from "dotenv";
 import cors from "cors"; // Add CORS to allow frontend requests
 import authRoutes from "./routes/auth.js";
+import userRoutes from "./routes/user.js";
 
 dotenv.config();
 
@@ -16,7 +17,8 @@ app.get("/", (req, res) => {
   res.send("Server is ready");
 });
 
-app.use("/api", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
 
 const PORT = 5000;
 
