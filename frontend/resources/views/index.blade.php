@@ -185,14 +185,14 @@
             <div class="w-full lg:w-1/2 px-4 mb-6">
                 <!-- Search Bar -->
                 <div class="bg-white rounded-lg shadow p-4 mb-6">
-                    <form action="" method="GET" class="flex flex-wrap gap-2">
+                    <form action="{{ url('/') }}" method="GET" class="flex flex-wrap gap-2">
                         <div class="flex-1 min-w-[200px]">
                             <input type="text" name="keyword" placeholder="Search events..."
                                 value="{{ request('keyword') }}"
                                 class="w-full border border-gray-200 rounded px-4 py-2 focus:border-red-600 focus:ring focus:ring-red-100 transition">
                         </div>
                         <div class="w-45">
-                            <input type="date"
+                            <input type="date" name="date" value="{{ request('date') }}"
                                 class="w-full border border-gray-200 rounded px-4 py-2 focus:border-red-600 focus:ring focus:ring-red-100 transition">
                         </div>
                         <div class="w-32">
@@ -208,35 +208,60 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2
                         class="text-blue-900 font-semibold mb-6 pb-3 relative after:absolute after:bottom-0 after:left-0 after:w-12 after:h-1 after:bg-primary">
-                        UPCOMING EVENTS</h2>
+                        UPCOMING EVENTS
+                    </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        @for ($i = 0; $i < 6; $i++)
+                        @forelse ($events as $index => $eventArray)
                             <div
                                 class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                                <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
-                                    class="w-full h-44 object-cover" alt="Event Image">
+                                <img src="{{ $eventArray['poster_url'] }}" class="w-full h-44 object-cover"
+                                    alt="{{ $eventArray['name'] }}">
                                 <div class="p-4">
-                                    <h5 class="text-gray-900 text-base font-semibold mb-2">Annual Tech Symposium 2025</h5>
+                                    <h5 class="text-gray-900 text-base font-semibold mb-2">{{ $eventArray['name'] }}</h5>
                                     <div class="text-red-600 text-sm mb-3 flex items-center">
-                                        <i class="far fa-calendar-alt mr-2"></i> May 15, 2025 • 9:00 AM
+                                        <i class="far fa-calendar-alt mr-2"></i>
+                                        {{ \Carbon\Carbon::parse($eventArray['date_time'])->format('M d, Y • h:i A') }}
                                     </div>
                                     <div class="text-gray-500 text-sm mb-4 flex items-center">
-                                        <i class="fas fa-map-marker-alt mr-2"></i> University Auditorium
+                                        <i class="fas fa-map-marker-alt mr-2"></i> {{ $eventArray['location'] }}
                                     </div>
                                     <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                                        <span class="text-red-600 font-semibold">FREE</span>
-                                        <button
+                                        <span
+                                            class="text-red-600 font-semibold">{{ $eventArray['registration_fee']['$numberDecimal'] }}</span>
+                                        <a href="{{ url('/event/' . $eventArray['_id']) }}"
                                             class="bg-red-50 text-primary text-sm font-medium px-4 py-1 rounded-full hover:bg-primary hover:text-white transition">
                                             Details
-                                        </button>
+                                        </a>
+                                    </div>
+                                    <div class="text-gray-600 text-xs mt-2">
+                                        Event #{{ $index + 1 }} | Speaker: {{ $eventArray['speaker'] }} | Max
+                                        Participants:
+                                        {{ $eventArray['max_participants'] }}
                                     </div>
                                 </div>
                             </div>
-                        @endfor
+                        @empty
+                            <p class="text-gray-500">No events found.</p>
+                        @endforelse
                     </div>
 
+                    <!-- Pagination -->
+                    @if ($totalPages > 1)
+                        <div class="flex justify-center mt-8">
+                            <nav class="flex gap-2">
+                                @for ($i = 1; $i <= $totalPages; $i++)
+                                    <a href="{{ url('/') }}?page={{ $i }}&location={{ $locationFilter }}&keyword={{ $keyword }}&date={{ $date }}&faculty={{ $faculty }}"
+                                        class="px-4 py-2 rounded {{ $currentPage == $i ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600' }} hover:bg-primary hover:text-white transition">
+                                        {{ $i }}
+                                    </a>
+                                @endfor
+                            </nav>
+                        </div>
+                    @endif
+
                     <div class="text-center mt-8">
-                        <a href="#" class="text-red-600 font-medium hover:text-blue-900 hover:underline transition">
+                        <a href="{{ url('/events') }}"
+                            class="text-red-600 font-medium hover:text-blue-900 hover:underline transition">
                             See more events <i class="fas fa-arrow-right ml-2"></i>
                         </a>
                     </div>

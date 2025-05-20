@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors"; // Add CORS to allow frontend requests
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
+import eventRoutes from "./routes/event.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/event", eventRoutes);
 
 const PORT = 5000;
 
