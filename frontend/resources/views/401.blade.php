@@ -11,7 +11,7 @@
 @section('content')
     <div class="flex justify-center items-center min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8">
         <div class="w-full max-w-lg bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="bg-red-600 text-white text-center py-6">
+            <div class="bg-red-600 text-white text-center py-4">
                 <h2 class="text-2xl font-semibold">401 Unauthorized</h2>
                 <p class="mt-1 opacity-90 text-sm">Access Denied</p>
             </div>

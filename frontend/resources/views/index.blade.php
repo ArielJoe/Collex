@@ -136,7 +136,7 @@
                         class="w-full h-full object-cover" alt="Concert Event">
                 </div>
                 <div class="carousel-slide flex-shrink-0 w-full h-full">
-                    <img src="https://images.t2u.io/upload/a/0-1100-AWSS3f95c2b8c-55ac-4625-bbfe-d7c9fd52e6ec-owvD_M.PNG"
+                    <img src="https://images.t2u.io/upload/a/0-1003-AWSS3fed91958-a395-4613-8857-29f09323efa5-hYg4_M.jpg"
                         class="w-full h-full object-cover" alt="Conference Event">
                 </div>
             </div>
@@ -227,14 +227,14 @@
                                     </div>
                                     <div class="flex justify-between items-center pt-3 border-t border-gray-100">
                                         <span
-                                            class="text-red-600 font-semibold">{{ $eventArray['registration_fee']['$numberDecimal'] }}</span>
+                                            class="text-red-600 font-semibold">${{ $eventArray['registration_fee']['$numberDecimal'] }}</span>
                                         <a href="{{ url('/event/' . $eventArray['_id']) }}"
                                             class="bg-red-50 text-primary text-sm font-medium px-4 py-1 rounded-full hover:bg-primary hover:text-white transition">
                                             Details
                                         </a>
                                     </div>
                                     <div class="text-gray-600 text-xs mt-2">
-                                        Event #{{ $index + 1 }} | Speaker: {{ $eventArray['speaker'] }} | Max
+                                        Event #{{ $index + 1 }} | Speaker: {{ $eventArray['speaker'] }}<br />Max
                                         Participants:
                                         {{ $eventArray['max_participants'] }}
                                     </div>
