@@ -77,24 +77,87 @@ const seedDatabase = async () => {
     const events = await Event.insertMany([
       {
         name: "Tech Conference 2025",
-        date_time: new Date(),
-        location: "Tech Center",
+        date_time: new Date("2025-09-15T09:00:00"),
+        location: "Tech Center, Main Hall",
         speaker: "John Doe",
         poster_url: faker.image.url(),
         registration_fee: 100,
         max_participants: 200,
         organizer_id: users[1]._id,
+        description: `Join us for the biggest tech conference of the year! Tech Conference 2025 brings together industry leaders, innovators, and enthusiasts for three days of cutting-edge presentations, workshops, and networking opportunities.
+
+Key Highlights:
+- Keynote speeches from top tech CEOs
+- Hands-on workshops on AI, blockchain, and cloud computing
+- Startup pitch competitions with $50,000 in prizes
+- Exclusive networking sessions with industry experts
+
+Who Should Attend:
+- Software developers and engineers
+- Tech entrepreneurs and startup founders
+- IT managers and decision-makers
+- Students and tech enthusiasts
+
+Don't miss this opportunity to stay ahead of the technology curve and connect with like-minded professionals!`
       },
       {
         name: "Web Development Workshop",
-        date_time: new Date(),
-        location: "Dev Hub",
+        date_time: new Date("2025-05-20T13:00:00"),
+        location: "Dev Hub, Room 302",
         speaker: "Jane Smith",
         poster_url: faker.image.url(),
         registration_fee: 50,
         max_participants: 100,
         organizer_id: users[1]._id,
+        description: `Master modern web development in this intensive one-day workshop led by renowned developer Jane Smith.
+
+Workshop Topics:
+- Building responsive UIs with React 19
+- Server-side rendering with Next.js
+- API development with Node.js and Express
+- Database integration (MongoDB & PostgreSQL)
+- Deployment strategies and CI/CD pipelines
+
+What You'll Get:
+- Hands-on coding exercises
+- Comprehensive workshop materials
+- Certificate of completion
+- 1-month free access to our online learning platform
+
+Prerequisites:
+Basic knowledge of HTML, CSS, and JavaScript is recommended. Bring your laptop with Node.js installed.
+
+Perfect for junior developers looking to level up their skills or experienced developers wanting to refresh their knowledge!`
       },
+      {
+        name: "Peloton 50: Ride the Legacy",
+        date_time: new Date("2025-06-01T08:00:00"),
+        location: "Celebrity Fitness Lupo Jogja",
+        speaker: "Marco Rodriguez",
+        poster_url: faker.image.url(),
+        registration_fee: 75,
+        max_participants: 50,
+        organizer_id: users[0]._id,
+        description: `CHAMPIONS, THIS IS YOUR CALL TO RIDE!
+
+Peloton 50 is a special indoor cycling event that captures the spirit of Tour de France with competitive energy! This isn't just a workout - it's an experience of determination, sweat, and energy.
+
+WHAT TO EXPECT:
+- High-energy instructors who motivate you to push harder
+- Challenging stages that test your endurance
+- Studio atmosphere that keeps your competitive spirit alive
+- Leaderboard tracking for the ultimate challenge
+- Post-ride recovery zone with refreshments
+
+PUSH PAST YOUR LIMITS, PEDAL WITH PURPOSE.
+IT'S TIME FOR BIORVOLUTION!
+
+Date: Sunday, 1 June 2025
+Time: 8:00 AM - 12:00 PM
+Location: Celebrity Fitness Lupo Jogja
+
+Open to all fitness levels - modify to your ability!`
+      }
     ]);
 
     console.log("Events seeded!");

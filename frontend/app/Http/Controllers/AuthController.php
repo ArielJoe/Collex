@@ -37,6 +37,7 @@ class AuthController extends Controller
             Session::put('email', $data['user']['email'] ?? null);
             Session::put('full_name', $data['user']['full_name'] ?? null);
             Session::put('role', $data['user']['role'] ?? null);
+            Session::put('userId', $data['user']['id'] ?? null);
 
             $successMessage = $data['message'] ?? 'Login successful';
             return redirect('/')->with('success', $successMessage);

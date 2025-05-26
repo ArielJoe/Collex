@@ -7,7 +7,7 @@ const paymentSchema = new mongoose.Schema(
       ref: "Registration",
       required: true,
     },
-    proof_url: { type: String, required: true },
+    proof_url: { type: String },
     amount: { type: mongoose.Types.Decimal128, required: true },
     status: {
       type: String,
