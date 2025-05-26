@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/event", eventRoutes);
-app.use("/", paymentRoutes);
+app.use("/api", paymentRoutes);
 
 const PORT = 5000;
 

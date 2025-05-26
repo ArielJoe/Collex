@@ -7,28 +7,6 @@
 @push('style')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .payment-status {
-            margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            display: inline-block;
-        }
-
-        .status-pending {
-            background-color: #fef3c7;
-            color: #d97706;
-        }
-
-        .status-completed {
-            background-color: #d1fae5;
-            color: #10b981;
-        }
-
-        .status-rejected {
-            background-color: #fee2e2;
-            color: #ef4444;
-        }
-
         .event-details-card {
             transition: all 0.3s ease;
             border-radius: 0.75rem;
@@ -48,6 +26,11 @@
             height: 100%;
             object-fit: cover;
             object-position: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .event-image-container:hover .event-image {
+            opacity: 0.9;
         }
 
         .file-upload-container {
@@ -120,8 +103,7 @@
 
         .registration-section {
             border-radius: 0.75rem;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
+            padding: 1rem;
         }
 
         .submit-btn {
@@ -137,6 +119,27 @@
         .submit-btn:active {
             transform: translateY(0);
         }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .proof-submitted {
+            background-color: #d1fae5;
+            color: #10b981;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            display: inline-block;
+        }
+
+        .payment-status-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
     </style>
 @endpush
 
@@ -144,12 +147,107 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
-            const API_BASE_URL = '{{ env('API_BASE_URL', 'http://localhost:5000') }}';
+            const API_BASE_URL = 'http://localhost:5000';
+            const userId = '{{ session('userId') }}';
+            const eventId = '{{ $event['_id'] }}';
 
-            // Check payment status on page load
-            @if (session('userId'))
-                checkPaymentStatus();
-            @endif
+            // Function to check payment status
+            function checkPaymentStatus() {
+                if (!userId || !eventId) {
+                    console.log('Missing userId or eventId');
+                    return;
+                }
+
+                console.log('Checking payment status for user:', userId, 'event:', eventId);
+
+                $.ajax({
+                    url: `${API_BASE_URL}/api/check-payment-status`,
+                    method: 'GET',
+                    data: {
+                        user_id: userId,
+                        event_id: eventId
+                    },
+                    success: function(response) {
+                        console.log('Payment status response:', response);
+
+                        if (response.proof_submitted || response.payment_status === 'completed' ||
+                            response.registered) {
+                            let submittedAt;
+                            // Format the submitted date
+                            if (response.submitted_at) {
+                                try {
+                                    submittedAt = new Date(response.submitted_at).toLocaleString(
+                                        'en-US', {
+                                            weekday: 'long',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            year: 'numeric',
+                                            hour: 'numeric',
+                                            minute: 'numeric',
+                                            hour12: true
+                                        }).replace(/PM|AM/, 'WIB');
+                                } catch (e) {
+                                    console.error('Date parsing error:', e);
+                                }
+                            }
+
+                            // Update the payment status in the event details grid
+                            $('#proofSubmittedDetail').html(`
+                                <div class="flex items-start">
+                                    <div class="detail-icon mr-3">
+                                        <i class="fas fa-receipt text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-medium text-gray-500">Payment Status</h3>
+                                        <p class="mt-1 font-medium text-green-600">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Payment Confirmed
+                                        </p>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Submitted on ${submittedAt}
+                                        </p>
+                                    </div>
+                                </div>
+                            `);
+
+                            // Show the success card
+                            $('#paymentStatusCard').html(`
+                                <div class="payment-status-card">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-2xl mr-3"></i>
+                                        <div>
+                                            <h3 class="text-lg font-semibold">Registration Confirmed!</h3>
+                                            <p class="text-sm opacity-90">Your payment has been verified and your spot is secured.</p>
+                                            <p class="text-xs opacity-75 mt-1">Confirmed on ${submittedAt}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).show();
+
+                            // Hide the registration form
+                            $('#registrationForm').hide();
+
+                            console.log('Payment confirmed - UI updated');
+                        } else {
+                            // Show registration form if not paid
+                            $('#registrationForm').show();
+                            $('#paymentStatusCard').hide();
+                            console.log('Payment not confirmed - showing registration form');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error checking payment status:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseJSON
+                        });
+
+                        // Show registration form on error
+                        $('#registrationForm').show();
+                        $('#paymentStatusCard').hide();
+                    }
+                });
+            }
 
             // File upload preview
             $('#proof_url').on('change', function() {
@@ -169,7 +267,7 @@
                     reader.onload = function(e) {
                         $('#filePreview').attr('src', e.target.result).show();
                         $('#fileName').text(file.name).show();
-                    }
+                    };
 
                     reader.readAsDataURL(file);
                 } else {
@@ -180,15 +278,14 @@
             });
 
             // Handle form submission
-            $('form').on('submit', function(e) {
+            $(document).on('submit', '#registrationForm form', function(e) {
                 e.preventDefault();
                 const form = $(this);
                 const formData = new FormData(form[0]);
                 const submitBtn = form.find('button[type="submit"]');
 
-                // Show loading state
                 submitBtn.prop('disabled', true);
-                submitBtn.prepend('<span class="loading-spinner mr-2"></span>');
+                submitBtn.prepend('<span class="loading-spinner mr-2 inline-block"></span>');
                 $('.loading-spinner').show();
 
                 $.ajax({
@@ -199,7 +296,10 @@
                     contentType: false,
                     success: function(response) {
                         showAlert('success', response.message || 'Registration successful!');
-                        checkPaymentStatus();
+                        // Wait a moment then check payment status
+                        setTimeout(() => {
+                            checkPaymentStatus();
+                        }, 1000);
                     },
                     error: function(xhr) {
                         const error = xhr.responseJSON ?
@@ -214,75 +314,6 @@
                 });
             });
 
-            function checkPaymentStatus() {
-                $('#paymentStatus').html(
-                    '<div class="flex items-center text-gray-600"><i class="fas fa-spinner fa-spin mr-2"></i> Checking status...</div>'
-                );
-
-                $.ajax({
-                    url: `${API_BASE_URL}/api/payment-status`,
-                    method: 'GET',
-                    data: {
-                        user_id: '{{ session('userId') }}',
-                        event_id: '{{ $event['_id'] }}'
-                    },
-                    success: function(response) {
-                        if (response.payment) {
-                            updatePaymentStatusUI(response.payment);
-                        } else {
-                            $('#paymentStatus').html(
-                                '<span class="text-gray-600">No payment record found</span>');
-                        }
-                    },
-                    error: function() {
-                        $('#paymentStatus').html(
-                            '<span class="text-red-500">Failed to check payment status</span>');
-                    }
-                });
-            }
-
-            function updatePaymentStatusUI(payment) {
-                let statusClass, statusText, icon;
-
-                switch (payment.payment_status) {
-                    case 'completed':
-                        statusClass = 'status-completed';
-                        statusText = 'Payment Completed';
-                        icon = 'fa-check-circle';
-                        break;
-                    case 'rejected':
-                        statusClass = 'status-rejected';
-                        statusText = 'Payment Rejected';
-                        icon = 'fa-times-circle';
-                        break;
-                    default:
-                        statusClass = 'status-pending';
-                        statusText = 'Payment Pending';
-                        icon = 'fa-clock';
-                }
-
-                const statusHtml = `
-                    <div class="payment-status ${statusClass} flex items-center">
-                        <i class="fas ${icon} mr-2"></i>
-                        ${statusText}
-                    </div>
-                    ${payment.payment_status === 'pending' ? 
-                        '<p class="text-sm text-gray-500 mt-2">Your payment is under review</p>' : ''}
-                    ${payment.payment_status === 'rejected' ? 
-                        '<p class="text-sm text-gray-500 mt-2">Please upload a new proof of payment</p>' : ''}
-                `;
-
-                $('#paymentStatus').html(statusHtml);
-
-                // Hide the form if payment is completed
-                if (payment.payment_status === 'completed') {
-                    $('form').hide();
-                    $('#registrationSuccess').show();
-                } else if (payment.payment_status === 'rejected') {
-                    $('form').show();
-                }
-            }
-
             function showAlert(type, message) {
                 const alertHtml = `
                     <div class="p-4 mb-4 rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} flex items-start">
@@ -293,13 +324,20 @@
 
                 $('#alertsContainer').html(alertHtml);
 
-                // Auto-hide after 5 seconds
                 setTimeout(() => {
                     $('#alertsContainer').fadeOut(300, function() {
                         $(this).empty().show();
                     });
                 }, 5000);
             }
+
+            // Check payment status on page load if user is logged in
+            @if (session('userId'))
+                console.log('User logged in, checking payment status...');
+                checkPaymentStatus();
+            @else
+                console.log('User not logged in');
+            @endif
         });
     </script>
 @endpush
@@ -380,6 +418,9 @@
                             </p>
                         </div>
                     </div>
+
+                    <!-- Payment Status Display (will be populated by JavaScript) -->
+                    <div id="proofSubmittedDetail"></div>
                 </div>
 
                 @if ($event['speaker'])
@@ -397,16 +438,11 @@
                 <!-- Registration Section -->
                 <div class="registration-section">
                     @if (session('userId'))
-                        <div id="paymentStatus" class="mb-4"></div>
+                        <!-- Payment Status Card (shown when payment is confirmed) -->
+                        <div id="paymentStatusCard" style="display: none;"></div>
 
-                        <div id="registrationSuccess" class="hidden bg-green-50 text-green-800 p-4 rounded-lg mb-4">
-                            <div class="flex items-center">
-                                <i class="fas fa-check-circle mr-2"></i>
-                                <span>You're successfully registered for this event!</span>
-                            </div>
-                        </div>
-
-                        @if (!isset($payment) || $payment['payment_status'] !== 'completed')
+                        <!-- Registration Form (shown when payment is not confirmed) -->
+                        <div id="registrationForm" style="display: none;">
                             <form action="{{ route('event.register.and.pay', $event['_id']) }}" method="POST"
                                 enctype="multipart/form-data">
                                 @csrf
@@ -436,7 +472,7 @@
                                     Submit Payment Proof
                                 </button>
                             </form>
-                        @endif
+                        </div>
                     @else
                         <div class="bg-blue-50 text-blue-800 p-4 rounded-lg flex items-start">
                             <i class="fas fa-info-circle mt-1 mr-2"></i>
