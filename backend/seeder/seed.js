@@ -77,7 +77,8 @@ const seedDatabase = async () => {
     const events = await Event.insertMany([
       {
         name: "Tech Conference 2025",
-        date_time: new Date("2025-09-15T09:00:00"),
+        start_time: new Date("2025-09-14T09:00:00"),
+        end_time: new Date("2025-09-15T09:00:00"),
         location: "Tech Center, Main Hall",
         speaker: "John Doe",
         poster_url: faker.image.url(),
@@ -102,7 +103,8 @@ Don't miss this opportunity to stay ahead of the technology curve and connect wi
       },
       {
         name: "Web Development Workshop",
-        date_time: new Date("2025-05-20T13:00:00"),
+        start_time: new Date("2025-09-19T09:00:00"),
+        end_time: new Date("2025-05-20T13:00:00"),
         location: "Dev Hub, Room 302",
         speaker: "Jane Smith",
         poster_url: faker.image.url(),
@@ -131,7 +133,8 @@ Perfect for junior developers looking to level up their skills or experienced de
       },
       {
         name: "Peloton 50: Ride the Legacy",
-        date_time: new Date("2025-06-01T08:00:00"),
+        start_time: new Date("2025-05-30T08:00:00"),
+        end_time: new Date("2025-06-01T08:00:00"),
         location: "Celebrity Fitness Lupo Jogja",
         speaker: "Marco Rodriguez",
         poster_url: faker.image.url(),

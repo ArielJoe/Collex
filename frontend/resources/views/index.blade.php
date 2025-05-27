@@ -104,7 +104,7 @@
                                     <h5 class="text-gray-900 text-base font-semibold mb-2">{{ $eventArray['name'] }}</h5>
                                     <div class="text-red-600 text-sm mb-3 flex items-center">
                                         <i class="far fa-calendar-alt mr-2"></i>
-                                        {{ \Carbon\Carbon::parse($eventArray['date_time'])->format('M d, Y • h:i A') }}
+                                        {{ \Carbon\Carbon::parse($eventArray['start_time'])->format('M d, Y • h:i A') }}
                                     </div>
                                     <div class="text-gray-500 text-sm mb-4 flex items-center">
                                         <i class="fas fa-map-marker-alt mr-2"></i> {{ $eventArray['location'] }}

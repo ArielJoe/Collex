@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
     try {
         // Execute query with pagination
         const events = await Event.find()
-            .select('name date_time location speaker poster_url registration_fee max_participants organizer_id created_at')
+            .select('name start_time end_time location speaker poster_url registration_fee max_participants organizer_id created_at')
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();

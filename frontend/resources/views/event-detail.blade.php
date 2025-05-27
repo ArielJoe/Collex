@@ -379,8 +379,8 @@
                         <div>
                             <h3 class="text-sm font-medium text-gray-500">Date & Time</h3>
                             <p class="mt-1 font-medium">
-                                {{ \Carbon\Carbon::parse($event['date_time'])->format('l, F j, Y') }}<br>
-                                {{ \Carbon\Carbon::parse($event['date_time'])->format('g:i A') }}
+                                {{ \Carbon\Carbon::parse($event['start_time'])->format('l, F j, Y') }}<br>
+                                {{ \Carbon\Carbon::parse($event['start_time'])->format('g:i A') }}
                             </p>
                         </div>
                     </div>
@@ -469,7 +469,7 @@
 
                                 <button type="submit"
                                     class="submit-btn bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full transition duration-300 flex items-center justify-center">
-                                    Submit Payment Proof
+                                    Submit
                                 </button>
                             </form>
                         </div>
