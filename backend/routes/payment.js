@@ -19,7 +19,7 @@ router.post('/register-and-pay', async (req, res) => {
         if (registration) {
             // Update existing registration with proof submission
             registration.proof_submitted = true;
-            registration.payment_status = 'pending'; // or 'pending' based on your workflow
+            registration.payment_status = 'pending';
             registration.updated_at = new Date();
             await registration.save();
 
@@ -27,7 +27,7 @@ router.post('/register-and-pay', async (req, res) => {
             let payment = await Payment.findOne({ registration_id: registration._id });
             if (payment) {
                 payment.proof_url = proof_url;
-                payment.status = 'pending'; // or 'pending'
+                payment.status = 'pending';
                 payment.updated_at = new Date();
                 await payment.save();
             } else {
@@ -35,7 +35,7 @@ router.post('/register-and-pay', async (req, res) => {
                     registration_id: registration._id,
                     proof_url,
                     amount: mongoose.Types.Decimal128.fromString(amount.toString()),
-                    status: 'pending', // or 'pending'
+                    status: 'pending',
                 });
                 await payment.save();
             }
@@ -45,7 +45,7 @@ router.post('/register-and-pay', async (req, res) => {
                 user_id,
                 event_id,
                 qr_code: new mongoose.Types.ObjectId().toString(),
-                payment_status: 'pending', // or 'pending'
+                payment_status: 'pending',
                 proof_submitted: true,
                 created_at: new Date(),
                 updated_at: new Date(),
@@ -58,7 +58,7 @@ router.post('/register-and-pay', async (req, res) => {
                 registration_id: registration._id,
                 proof_url,
                 amount: mongoose.Types.Decimal128.fromString(amount.toString()),
-                status: 'pending', // or 'pending'
+                status: 'pending',
                 created_at: new Date(),
                 updated_at: new Date(),
             });

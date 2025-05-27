@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\OrganizerController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,7 +27,14 @@ Route::get('/event/{id}', [EventController::class, 'show'])->name('event.show');
 Route::post('/event/{eventId}/register-and-pay', [PaymentController::class, 'registerAndPay'])->name('event.register.and.pay');
 
 Route::middleware('role')->prefix('member')->name('member.')->group(function () {
-    Route::get('/', [MemberController::class, 'index'])->name('index');
+    Route::get('/', [OrganizerController::class, 'index'])->name('index');
+    Route::get('/events', [OrganizerController::class, 'events'])->name('events.index');
+    Route::get('/events/create', [OrganizerController::class, 'createEvent'])->name('events.create');
+    Route::post('/events', [OrganizerController::class, 'storeEvent'])->name('events.store');
+    Route::get('/events/{event}', [OrganizerController::class, 'showEvent'])->name('events.show');
+    Route::get('/events/{event}/edit', [OrganizerController::class, 'editEvent'])->name('events.edit');
+    Route::put('/events/{event}', [OrganizerController::class, 'updateEvent'])->name('events.update');
+    Route::delete('/events/{event}', [OrganizerController::class, 'destroyEvent'])->name('events.destroy');
 });
 
 Route::middleware('role')

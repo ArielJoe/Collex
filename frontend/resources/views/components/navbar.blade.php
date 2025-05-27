@@ -1,7 +1,8 @@
 <nav class="bg-white shadow-sm py-3 px-4 sticky top-0 z-50">
     <div class="container mx-auto flex justify-between items-center">
         <!-- Brand Name -->
-        <a class="text-2xl font-bold text-red-600 tracking-tight" href="{{ url('/') }}">Tixin</a>
+        <a class="text-2xl font-bold text-red-600 tracking-tight" href="{{ url('/') }}"><img
+                src="{{ asset('collex.png') }}" alt="" width="150px"></a>
 
         <!-- Hamburger Menu for Mobile -->
         <button class="md:hidden text-gray-600 hover:text-red-600 focus:outline-none" id="mobileMenuButton"
@@ -29,17 +30,30 @@
                             <i class="fas fa-user-circle mr-2"></i>
                             <p>{{ session('full_name') }}</p>
                         </button>
-                        <ul class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg hidden"
+                        <ul class="absolute right-0 mt-2 w-60 bg-white rounded-lg shadow-lg hidden"
                             id="userDropdownMenu">
                             <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="#"><i
                                         class="fas fa-user mr-2"></i>Profile</a></li>
                             @if (session('role') === 'member')
-                                <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="/member"><i
-                                            class="fas fa-ticket-alt mr-2"></i>My Tickets</a></li>
+                                <li>
+                                    <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="/member">
+                                        <i class="fas fa-ticket-alt mr-2"></i>My Tickets
+                                    </a>
+                                </li>
                             @endif
                             @if (session('role') === 'admin')
-                                <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="/admin"><i
-                                            class="fa-solid fa-table-columns mr-2"></i>Dashboard</a></li>
+                                <li>
+                                    <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="/admin">
+                                        <i class="fa-solid fa-table-columns mr-2"></i>Admin Dashboard
+                                    </a>
+                                </li>
+                            @endif
+                            @if (session('role') === 'organizer')
+                                <li>
+                                    <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="/organizer">
+                                        <i class="fa-solid fa-table-columns mr-2"></i>Organizer Dashboard
+                                    </a>
+                                </li>
                             @endif
                             <li>
                                 <hr class="border-gray-200">
@@ -97,12 +111,25 @@
                             <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="#"><i
                                         class="fas fa-user mr-2"></i>Profile</a></li>
                             @if (session('role') === 'member')
-                                <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="/member"><i
-                                            class="fas fa-ticket-alt mr-2"></i>My Tickets</a></li>
+                                <li>
+                                    <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="/member">
+                                        <i class="fas fa-ticket-alt mr-2"></i>My Tickets
+                                    </a>
+                                </li>
                             @endif
                             @if (session('role') === 'admin')
-                                <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="/admin"><i
-                                            class="fa-solid fa-table-columns mr-2"></i>Dashboard</a></li>
+                                <li>
+                                    <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="/admin">
+                                        <i class="fa-solid fa-table-columns mr-2"></i>Admin Dashboard
+                                    </a>
+                                </li>
+                            @endif
+                            @if (session('role') === 'organizer')
+                                <li>
+                                    <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="/organizer">
+                                        <i class="fa-solid fa-table-columns mr-2"></i>Organizer Dashboard
+                                    </a>
+                                </li>
                             @endif
                             <li>
                                 <hr class="border-gray-200">
