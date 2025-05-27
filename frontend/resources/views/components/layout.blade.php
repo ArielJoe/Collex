@@ -22,6 +22,7 @@
     </main>
 
     @stack('script')
+
 </body>
 
 </html>

@@ -220,105 +220,54 @@
 
 @push('script')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Mobile menu toggle
-            const mobileMenuButton = document.getElementById('mobileMenuButton');
-            const mobileMenu = document.getElementById('mobileMenu');
+        // Carousel functionality
+        const carouselWrapper = document.querySelector('.carousel-wrapper');
+        const carouselSlides = document.querySelectorAll('.carousel-slide');
+        const carouselIndicators = document.querySelectorAll('.carousel-indicator');
+        const carouselPrev = document.querySelector('.carousel-prev');
+        const carouselNext = document.querySelector('.carousel-next');
+        let currentIndex = 0;
 
-            if (mobileMenuButton && mobileMenu) {
-                mobileMenuButton.addEventListener('click', function() {
-                    mobileMenu.classList.toggle('hidden');
-                });
+        function showSlide(index) {
+            if (index >= carouselSlides.length) index = 0;
+            if (index < 0) index = carouselSlides.length - 1;
+            carouselWrapper.style.transform = `translateX(-${index * 100}%)`;
 
-                // Close mobile menu when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
-                        mobileMenu.classList.add('hidden');
-                    }
-                });
-            }
-
-            // User dropdown toggle (Desktop)
-            const userDropdown = document.getElementById('userDropdown');
-            const userDropdownMenu = document.getElementById('userDropdownMenu');
-
-            if (userDropdown && userDropdownMenu) {
-                userDropdown.addEventListener('click', function() {
-                    userDropdownMenu.classList.toggle('hidden');
-                });
-
-                document.addEventListener('click', function(e) {
-                    if (!userDropdown.contains(e.target) && !userDropdownMenu.contains(e.target)) {
-                        userDropdownMenu.classList.add('hidden');
-                    }
-                });
-            }
-
-            // User dropdown toggle (Mobile)
-            const mobileUserDropdown = document.getElementById('mobileUserDropdown');
-            const mobileUserDropdownMenu = document.getElementById('mobileUserDropdownMenu');
-
-            if (mobileUserDropdown && mobileUserDropdownMenu) {
-                mobileUserDropdown.addEventListener('click', function() {
-                    mobileUserDropdownMenu.classList.toggle('hidden');
-                });
-
-                document.addEventListener('click', function(e) {
-                    if (!mobileUserDropdown.contains(e.target) && !mobileUserDropdownMenu.contains(e
-                            .target)) {
-                        mobileUserDropdownMenu.classList.add('hidden');
-                    }
-                });
-            }
-
-            // Carousel functionality
-            const carouselWrapper = document.querySelector('.carousel-wrapper');
-            const carouselSlides = document.querySelectorAll('.carousel-slide');
-            const carouselIndicators = document.querySelectorAll('.carousel-indicator');
-            const carouselPrev = document.querySelector('.carousel-prev');
-            const carouselNext = document.querySelector('.carousel-next');
-            let currentIndex = 0;
-
-            function showSlide(index) {
-                if (index >= carouselSlides.length) index = 0;
-                if (index < 0) index = carouselSlides.length - 1;
-                carouselWrapper.style.transform = `translateX(-${index * 100}%)`;
-
-                carouselIndicators.forEach((indicator, i) => {
-                    indicator.classList.toggle('bg-white', i === index);
-                    indicator.classList.toggle('bg-white/50', i !== index);
-                });
-
-                currentIndex = index;
-            }
-
-            carouselIndicators.forEach((indicator, index) => {
-                indicator.addEventListener('click', () => showSlide(index));
+            carouselIndicators.forEach((indicator, i) => {
+                indicator.classList.toggle('bg-white', i === index);
+                indicator.classList.toggle('bg-white/50', i !== index);
             });
 
-            if (carouselPrev) {
-                carouselPrev.addEventListener('click', () => showSlide(currentIndex - 1));
-            }
+            currentIndex = index;
+        }
 
-            if (carouselNext) {
-                carouselNext.addEventListener('click', () => showSlide(currentIndex + 1));
-            }
+        carouselIndicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => showSlide(index));
+        });
 
-            // Auto-advance carousel
-            setInterval(() => {
-                showSlide(currentIndex + 1);
-            }, 5000);
+        if (carouselPrev) {
+            carouselPrev.addEventListener('click', () => showSlide(currentIndex - 1));
+        }
 
-            // Faculty filter tabs
-            const facultyLinks = document.querySelectorAll('.faculty-link');
-            facultyLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    facultyLinks.forEach(l => l.classList.remove('active:text-red-600',
-                        'active:font-medium'));
-                    this.classList.add('active:text-red-600', 'active:font-medium');
-                });
-            });
+        if (carouselNext) {
+            carouselNext.addEventListener('click', () => showSlide(currentIndex + 1));
+        }
+
+        // Auto-advance carousel
+        setInterval(() => {
+            showSlide(currentIndex + 1);
+        }, 5000);
+
+        // Faculty filter tabs
+        const facultyLinks = document.querySelectorAll('.faculty-link');
+        facultyLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            facultyLinks.forEach(l => l.classList.remove('active:text-red-600',
+                'active:font-medium'));
+            this.classList.add('active:text-red-600', 'active:font-medium');
+        });
+        });
         });
     </script>
 @endpush
