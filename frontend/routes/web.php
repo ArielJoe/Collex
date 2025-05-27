@@ -26,7 +26,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/event/{id}', [EventController::class, 'show'])->name('event.show');
 Route::post('/event/{eventId}/register-and-pay', [PaymentController::class, 'registerAndPay'])->name('event.register.and.pay');
 
-Route::middleware('role')->prefix('member')->name('member.')->group(function () {
+Route::middleware('role')->prefix('organizer')->name('organizer.')->group(function () {
     Route::get('/', [OrganizerController::class, 'index'])->name('index');
     Route::get('/events', [OrganizerController::class, 'events'])->name('events.index');
     Route::get('/events/create', [OrganizerController::class, 'createEvent'])->name('events.create');
@@ -36,6 +36,8 @@ Route::middleware('role')->prefix('member')->name('member.')->group(function () 
     Route::put('/events/{event}', [OrganizerController::class, 'updateEvent'])->name('events.update');
     Route::delete('/events/{event}', [OrganizerController::class, 'destroyEvent'])->name('events.destroy');
 });
+
+Route::middleware('role')->prefix('member')->name('member.')->group(function () {});
 
 Route::middleware('role')
     ->prefix('admin')

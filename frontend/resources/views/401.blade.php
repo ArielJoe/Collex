@@ -1,7 +1,7 @@
 @extends('components.layout')
 
 @section('title')
-    Tixin - Unauthorized
+    Unauthorized
 @endsection
 
 @push('style')
