@@ -78,7 +78,7 @@
                             <tr class="hover:bg-gray-50 transition-colors duration-150">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if (!empty($event['poster_url']))
-                                        <img src="{{ url($event['poster_url']) }}" alt="Event Poster"
+                                        <img src="{{ url('storage/' . $event['poster_url']) }}" alt="Event Poster"
                                             class="w-16 h-16 rounded object-cover">
                                     @else
                                         <div class="w-16 h-16 rounded bg-gray-200 flex items-center justify-center">

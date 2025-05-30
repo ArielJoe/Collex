@@ -1,28 +1,14 @@
-import mongoose from "mongoose";
+import { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 
-const certificateSchema = new mongoose.Schema(
-  {
-    registration_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Registration",
-      required: true,
-    },
-    event_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Event",
-      required: true,
-    },
+const CertificateSchema = Schema({
+    registration_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Registration', required: true },
+    detail_id: { type: mongoose.Schema.Types.ObjectId, ref: 'EventDetail', required: true },
     certificate_url: { type: String, required: true },
-    uploaded_by: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    uploaded_at: { type: Date, default: Date.now },
-  },
-  {
+    uploaded_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    uploaded_at: { type: Date, default: Date.now }
+}, {
     collection: "certificate",
-  }
-);
+});
 
-export default mongoose.model("Certificate", certificateSchema);
+export default model('Certificate', CertificateSchema);

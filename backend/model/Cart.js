@@ -1,19 +1,14 @@
 import { Schema, model } from 'mongoose';
 import mongoose from 'mongoose';
 
-const RegistrationSchema = Schema({
+const CartSchema = Schema({
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', required: true },
     detail_id: { type: mongoose.Schema.Types.ObjectId, ref: 'EventDetail' },
     package_id: { type: mongoose.Schema.Types.ObjectId, ref: 'EventPackage' },
-    registration_date: { type: Date, default: Date.now },
-    payment_status: {
-        type: String,
-        enum: ['pending', 'confirmed', 'rejected'],
-        default: 'pending'
-    }
+    added_at: { type: Date, default: Date.now }
 }, {
-    collection: "registration",
+    collection: "cart",
 });
 
-export default model('Registration', RegistrationSchema);
+export default model('Cart', CartSchema);

@@ -1,26 +1,18 @@
-import mongoose from "mongoose";
+import { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 
-const eventSchema = new mongoose.Schema(
-  {
+const eventSchema = Schema({
     name: { type: String, required: true },
-    description: { type: String, required: true },
-    start_time: { type: Date, required: true },
-    end_time: { type: Date, required: true },
     location: { type: String, required: true },
-    speaker: String,
-    poster_url: String,
-    registration_fee: { type: mongoose.Types.Decimal128, default: 0.0 },
+    poster_url: { type: String },
     max_participants: { type: Number, required: true },
-    organizer_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-  },
-  {
-    timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
+    organizer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    faculty: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty', required: true },
+    registration_deadline: { type: Date, required: true },
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date }
+}, {
     collection: "event",
-  }
-);
+});
 
-export default mongoose.model("Event", eventSchema);
+export default model('Event', eventSchema);

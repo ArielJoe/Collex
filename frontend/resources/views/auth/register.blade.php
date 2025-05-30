@@ -13,7 +13,7 @@
         <div class="w-full max-w-lg bg-white rounded-xl shadow-lg overflow-hidden">
             <div class="bg-primary text-white text-center py-4">
                 <h2 class="text-2xl font-semibold">Create Account</h2>
-                <p class="mt-1 opacity-90 text-sm">Join Tixin today</p>
+                <p class="mt-1 opacity-90 text-sm">Join Collex today</p>
             </div>
 
             <div class="p-6 sm:p-8">
