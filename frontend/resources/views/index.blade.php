@@ -106,17 +106,14 @@
                                         <i class="fas fa-map-marker-alt mr-2"></i> {{ $eventArray['location'] }}
                                     </div>
                                     <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                                        <span
-                                            class="text-red-600 font-semibold">${{ $eventArray['registration_fee']['$numberDecimal'] }}</span>
                                         <a href="{{ url('/event/' . $eventArray['_id']) }}"
                                             class="bg-red-50 text-primary text-sm font-medium px-4 py-1 rounded-full hover:bg-primary hover:text-white transition">
                                             Details
                                         </a>
                                     </div>
                                     <div class="text-gray-600 text-xs mt-2">
-                                        Event #{{ $index + 1 }} | Speaker: {{ $eventArray['speaker'] }}<br />Max
-                                        Participants:
-                                        {{ $eventArray['max_participants'] }}
+                                        Max Participants:
+                                        {{ $eventArray['max_participant'] }}
                                     </div>
                                 </div>
                             </div>
@@ -257,13 +254,12 @@
         // Faculty filter tabs
         const facultyLinks = document.querySelectorAll('.faculty-link');
         facultyLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            facultyLinks.forEach(l => l.classList.remove('active:text-red-600',
-                'active:font-medium'));
-            this.classList.add('active:text-red-600', 'active:font-medium');
-        });
-        });
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                facultyLinks.forEach(l => l.classList.remove('active:text-red-600',
+                    'active:font-medium'));
+                this.classList.add('active:text-red-600', 'active:font-medium');
+            });
         });
     </script>
 @endpush
