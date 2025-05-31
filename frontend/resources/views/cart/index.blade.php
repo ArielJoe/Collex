@@ -134,7 +134,7 @@
                         </div>
                         <div class="mt-8 text-right">
                             <a href="{{-- route('checkout.index') --}}" {{-- Ganti dengan rute checkout Anda --}}
-                                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-8 rounded-lg text-lg transition duration-300 shadow-md hover:shadow-lg">
+                                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg text-md transition duration-300 shadow-md hover:shadow-lg">
                                 Lanjut ke Pembayaran
                             </a>
                         </div>

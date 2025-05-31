@@ -6,7 +6,7 @@
 
 @section('content')
     @include('components.admin.navbar')
-    <div class="container mx-auto px-6 py-6">
+    <div class="mx-auto px-6 py-6 sm:ml-64 min-h-screen">
         <!-- Header Section -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>

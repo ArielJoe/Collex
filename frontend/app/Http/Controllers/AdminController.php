@@ -4,21 +4,43 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log; // Penting untuk debugging
+use Illuminate\Validation\Rule; // Untuk validasi enum
 
 class AdminController extends Controller
 {
-    protected $apiBaseUrl = 'http://localhost:5000/api/user';
+    protected $apiBaseUrl;
+
+    public function __construct()
+    {
+        // Menggunakan API_BASE_URL dari .env dan menambahkan /api/users
+        // Pastikan API_BASE_URL di .env adalah 'http://localhost:5000'
+        $this->apiBaseUrl = rtrim(env('API_BASE_URL', 'http://localhost:5000'), '/') . '/api/user';
+    }
 
     // Dashboard with user stats
     public function dashboard()
     {
         try {
+            // Endpoint di Node.js adalah GET /api/users/stats
             $response = Http::get("{$this->apiBaseUrl}/stats");
-            $stats = $response->json();
-            
+
+            if ($response->failed()) {
+                Log::error('Admin Dashboard - API stats request failed: ' . $response->body());
+                return view('admin.dashboard', ['stats' => null])->with('error', 'Gagal mengambil data statistik pengguna.');
+            }
+
+            $responseData = $response->json();
+            // Asumsi API mengembalikan { success: true, data: statsObject }
+            $stats = (isset($responseData['success']) && $responseData['success'] === true && isset($responseData['data'])) ? $responseData['data'] : null;
+
             return view('admin.dashboard', compact('stats'));
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Admin Dashboard - API connection error: ' . $e->getMessage());
+            return view('admin.dashboard', ['stats' => null])->with('error', 'Tidak dapat terhubung ke layanan pengguna.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to fetch dashboard data');
+            Log::error('Admin Dashboard - Generic error: ' . $e->getMessage());
+            return view('admin.dashboard', ['stats' => null])->with('error', 'Terjadi kesalahan saat mengambil data dashboard.');
         }
     }
 
@@ -27,37 +49,79 @@ class AdminController extends Controller
     {
         $role = $request->query('role');
         $page = $request->query('page', 1);
-        
+        $search = $request->query('search'); // Tambahkan parameter pencarian
+
         try {
-            $response = Http::get($this->apiBaseUrl, [
-                'role' => $role,
+            $queryParams = [
                 'page' => $page,
-                'limit' => 10
-            ]);
-            
-            $data = $response->json();
-            
-            return view('admin.user.index', [
-                'users' => $data['users'],
-                'totalPages' => $data['totalPages'],
-                'currentPage' => $data['currentPage'],
-                'roleFilter' => $role
-            ]);
+                'limit' => 10 // Anda bisa membuat ini konfigurabel
+            ];
+            if ($role) {
+                $queryParams['role'] = $role;
+            }
+            if ($search) {
+                $queryParams['search'] = $search;
+            }
+
+            // Endpoint di Node.js adalah GET /api/users
+            $response = Http::get($this->apiBaseUrl, $queryParams);
+
+            if ($response->failed()) {
+                Log::error('Admin User Index - API request failed: ' . $response->body());
+                return back()->with('error', 'Gagal mengambil daftar pengguna.');
+            }
+
+            $responseData = $response->json();
+            // Asumsi API mengembalikan { success: true, data: users, totalPages, currentPage, totalUsers }
+            if (isset($responseData['success']) && $responseData['success'] === true) {
+                return view('admin.user.index', [
+                    'users' => $responseData['data'] ?? [],
+                    'totalPages' => $responseData['totalPages'] ?? 1,
+                    'currentPage' => $responseData['currentPage'] ?? 1,
+                    'totalUsers' => $responseData['totalUsers'] ?? 0,
+                    'roleFilter' => $role,
+                    'searchFilter' => $search
+                ]);
+            }
+
+            return back()->with('error', $responseData['message'] ?? 'Gagal mengambil data pengguna.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Admin User Index - API connection error: ' . $e->getMessage());
+            return back()->with('error', 'Tidak dapat terhubung ke layanan pengguna.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to fetch users');
+            Log::error('Admin User Index - Generic error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mengambil daftar pengguna.');
         }
     }
 
-    // Show user details
+    // Show user details (jika ada halaman detail user di admin)
     public function show($id)
     {
         try {
+            // Endpoint di Node.js adalah GET /api/users/:id
             $response = Http::get("{$this->apiBaseUrl}/{$id}");
-            $user = $response->json();
-            
-            return view('admin.user.show', compact('user'));
+
+            if ($response->failed()) {
+                Log::error("Admin User Show - API request for user {$id} failed: " . $response->body());
+                if ($response->status() == 404) {
+                    return redirect()->route('admin.user.index')->with('error', 'Pengguna tidak ditemukan.');
+                }
+                return back()->with('error', 'Gagal mengambil detail pengguna.');
+            }
+
+            $responseData = $response->json();
+            if (isset($responseData['success']) && $responseData['success'] === true && isset($responseData['data'])) {
+                $user = $responseData['data'];
+                return view('admin.user.show', compact('user'));
+            }
+
+            return redirect()->route('admin.user.index')->with('error', $responseData['message'] ?? 'Gagal mengambil detail pengguna.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error("Admin User Show - API connection error for user {$id}: " . $e->getMessage());
+            return redirect()->route('admin.user.index')->with('error', 'Tidak dapat terhubung ke layanan pengguna.');
         } catch (\Exception $e) {
-            return back()->with('error', 'User not found');
+            Log::error("Admin User Show - Generic error for user {$id}: " . $e->getMessage());
+            return redirect()->route('admin.user.index')->with('error', 'Terjadi kesalahan.');
         }
     }
 
@@ -70,24 +134,34 @@ class AdminController extends Controller
     // Store new user
     public function store(Request $request)
     {
-        $request->validate([
-            'full_name' => 'required',
-            'phone_number' => 'required|regex:/^\d{10,12}$/',
-            'email' => 'required|email',
-            'password' => 'required|min:6',
-            'role' => 'required|in:member,finance,organizer'
+        $validatedData = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'phone_number' => 'required|string|regex:/^\d{10,15}$/', // Sesuaikan regex jika perlu
+            'email' => 'required|email|max:255',
+            'password' => 'required|string|min:6', // Minimal 6 karakter untuk password baru
+            'role' => ['required', Rule::in(['member', 'admin', 'finance', 'organizer'])],
+            'photo_url' => 'nullable|url|max:2048',
+            'is_active' => 'sometimes|boolean',
         ]);
 
         try {
-            $response = Http::post($this->apiBaseUrl, $request->all());
-            
-            if ($response->successful()) {
-                return redirect()->route('admin.user.index')->with('success', 'User created successfully');
+            // Endpoint di Node.js adalah POST /api/users
+            $response = Http::post($this->apiBaseUrl, $validatedData);
+
+            $responseData = $response->json();
+
+            if ($response->successful() && isset($responseData['success']) && $responseData['success'] === true) {
+                return redirect()->route('admin.user.index')->with('success', $responseData['message'] ?? 'Pengguna berhasil dibuat.');
             }
-            
-            return back()->with('error', $response->json()['message'] ?? 'Failed to create user');
+
+            Log::error('Admin User Store - API request failed: ' . $response->body());
+            return back()->withInput()->with('error', $responseData['message'] ?? 'Gagal membuat pengguna.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Admin User Store - API connection error: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Tidak dapat terhubung ke layanan pengguna.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to create user');
+            Log::error('Admin User Store - Generic error: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat membuat pengguna.');
         }
     }
 
@@ -95,51 +169,94 @@ class AdminController extends Controller
     public function edit($id)
     {
         try {
+            // Endpoint di Node.js adalah GET /api/users/:id
             $response = Http::get("{$this->apiBaseUrl}/{$id}");
-            $user = $response->json();
-            
-            return view('admin.user.edit', compact('user'));
+
+            if ($response->failed()) {
+                Log::error("Admin User Edit - API request for user {$id} failed: " . $response->body());
+                if ($response->status() == 404) {
+                    return redirect()->route('admin.user.index')->with('error', 'Pengguna tidak ditemukan.');
+                }
+                return redirect()->route('admin.user.index')->with('error', 'Gagal mengambil data pengguna untuk diedit.');
+            }
+
+            $responseData = $response->json();
+            if (isset($responseData['success']) && $responseData['success'] === true && isset($responseData['data'])) {
+                $user = $responseData['data'];
+                return view('admin.user.edit', compact('user'));
+            }
+
+            return redirect()->route('admin.user.index')->with('error', $responseData['message'] ?? 'Gagal mengambil data pengguna.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error("Admin User Edit - API connection error for user {$id}: " . $e->getMessage());
+            return redirect()->route('admin.user.index')->with('error', 'Tidak dapat terhubung ke layanan pengguna.');
         } catch (\Exception $e) {
-            return back()->with('error', 'User not found');
+            Log::error("Admin User Edit - Generic error for user {$id}: " . $e->getMessage());
+            return redirect()->route('admin.user.index')->with('error', 'Terjadi kesalahan.');
         }
     }
 
     // Update user
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'full_name' => 'required',
-            'phone_number' => 'required|regex:/^\d{10,12}$/',
-            'email' => 'required|email',
-            'role' => 'required|in:member,finance,organizer'
+        $validatedData = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'phone_number' => 'required|string|regex:/^\d{10,15}$/',
+            'email' => ['required', 'email', 'max:255'],
+            'role' => ['required', Rule::in(['member', 'admin', 'finance', 'organizer'])],
+            'photo_url' => 'nullable|url|max:2048',
+            'is_active' => 'required|boolean',
+            'password' => 'nullable|string|min:6|confirmed', // Password opsional, jika diisi harus dikonfirmasi
         ]);
 
+        // Hanya kirim password jika diisi
+        $payload = $validatedData;
+        if (empty($validatedData['password'])) {
+            unset($payload['password']);
+        }
+
         try {
-            $response = Http::put("{$this->apiBaseUrl}/{$id}", $request->all());
-            
-            if ($response->successful()) {
-                return redirect()->route('admin.user.index')->with('success', 'User updated successfully');
+            // Endpoint di Node.js adalah PUT /api/users/:id
+            $response = Http::put("{$this->apiBaseUrl}/{$id}", $payload);
+
+            $responseData = $response->json();
+
+            if ($response->successful() && isset($responseData['success']) && $responseData['success'] === true) {
+                return redirect()->route('admin.user.index')->with('success', $responseData['message'] ?? 'Pengguna berhasil diperbarui.');
             }
-            
-            return back()->with('error', $response->json()['message'] ?? 'Failed to update user');
+
+            Log::error("Admin User Update - API request for user {$id} failed: " . $response->body());
+            return back()->withInput()->with('error', $responseData['message'] ?? 'Gagal memperbarui pengguna.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error("Admin User Update - API connection error for user {$id}: " . $e->getMessage());
+            return back()->withInput()->with('error', 'Tidak dapat terhubung ke layanan pengguna.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to update user');
+            Log::error("Admin User Update - Generic error for user {$id}: " . $e->getMessage());
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat memperbarui pengguna.');
         }
     }
 
-    // Delete user
+    // Delete user (soft delete)
     public function destroy($id)
     {
         try {
+            // Endpoint di Node.js adalah DELETE /api/users/:id
             $response = Http::delete("{$this->apiBaseUrl}/{$id}");
-            
-            if ($response->successful()) {
-                return redirect()->route('admin.user.index')->with('success', 'User deleted successfully');
+
+            $responseData = $response->json();
+
+            if ($response->successful() && isset($responseData['success']) && $responseData['success'] === true) {
+                return redirect()->route('admin.user.index')->with('success', $responseData['message'] ?? 'Pengguna berhasil dinonaktifkan.');
             }
-            
-            return back()->with('error', $response->json()['message'] ?? 'Failed to delete user');
+
+            Log::error("Admin User Destroy - API request for user {$id} failed: " . $response->body());
+            return back()->with('error', $responseData['message'] ?? 'Gagal menonaktifkan pengguna.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error("Admin User Destroy - API connection error for user {$id}: " . $e->getMessage());
+            return back()->with('error', 'Tidak dapat terhubung ke layanan pengguna.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to delete user');
+            Log::error("Admin User Destroy - Generic error for user {$id}: " . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat menonaktifkan pengguna.');
         }
     }
 }

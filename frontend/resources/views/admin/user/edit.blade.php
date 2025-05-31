@@ -6,7 +6,7 @@
 
 @section('content')
     @include('components.admin.navbar')
-    <div class="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8 sm:ml-64 min-h-screen">
         <div class="max-w-3xl mx-auto">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4">
                 <h1 class="text-3xl font-bold text-gray-900 mb-4">Edit User Profile</h1>
