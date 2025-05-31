@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MemberController;
@@ -26,6 +27,15 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/event/{id}', [EventController::class, 'show'])->name('event.show');
 Route::post('/event/{eventId}/register-and-pay', [PaymentController::class, 'registerAndPay'])->name('event.register.and.pay');
+
+// Cart Routes
+Route::prefix('cart')->name('cart.')->group(function () { // Pastikan middleware auth Laravel Anda benar
+    Route::get('/', [CartController::class, 'index'])->name('index');
+    // Menggunakan POST untuk delete karena form HTML standar tidak mendukung DELETE secara langsung tanpa JS
+    Route::post('/cart/item/{cartItemId}/remove', [CartController::class, 'removeItem'])->name('item.remove');
+    Route::post('/cart/clear', [CartController::class, 'clearCart'])->name('clear');
+    // Anda bisa menggunakan Route::delete jika Anda akan menggunakan JavaScript untuk mengirim request DELETE
+});
 
 Route::middleware('role')->prefix('organizer')->name('organizer.')->group(function () {
     Route::get('/', [OrganizerController::class, 'index'])->name('index');
