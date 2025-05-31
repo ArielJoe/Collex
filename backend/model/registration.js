@@ -7,11 +7,6 @@ const RegistrationSchema = Schema({
     detail_id: { type: mongoose.Schema.Types.ObjectId, ref: 'EventDetail' },
     package_id: { type: mongoose.Schema.Types.ObjectId, ref: 'EventPackage' },
     registration_date: { type: Date, default: Date.now },
-    payment_status: {
-        type: String,
-        enum: ['pending', 'confirmed', 'rejected'],
-        default: 'pending'
-    }
 }, {
     collection: "registration",
 });

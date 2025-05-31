@@ -263,7 +263,6 @@ const seedDatabase = async () => {
                     event_id: event._id,
                     detail_id: detailId,
                     package_id: packageId,
-                    payment_status: faker.helpers.arrayElement(['pending', 'confirmed', 'rejected']),
                 });
             }
         }

@@ -24,7 +24,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/event", eventRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api", paymentRoutes);
+app.use("/api/payment", paymentRoutes);
 
 const PORT = 5000;
 

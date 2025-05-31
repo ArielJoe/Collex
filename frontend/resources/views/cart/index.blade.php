@@ -6,6 +6,34 @@
 
 @push('style')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom spinner for buttons */
+        .btn-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .cart-item-card {
+            transition: all 0.3s ease;
+        }
+
+        .cart-item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -19,16 +47,20 @@
                 <div
                     class="mb-6 p-4 bg-green-100 text-green-700 border border-green-300 rounded-md shadow-sm flex justify-between items-center">
                     <span>{{ session('success') }}</span>
-                    <button type="button" onclick="this.parentElement.style.display='none'"><i
-                            class="fas fa-check-circle"></i></button>
+                    <button type="button" onclick="this.parentElement.style.display='none'"
+                        class="text-green-700 hover:text-green-900">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             @endif
             @if (session('error'))
                 <div
                     class="mb-6 p-4 bg-red-100 text-red-700 border border-red-300 rounded-md shadow-sm flex justify-between items-center">
                     <span>{{ session('error') }}</span>
-                    <button type="button" onclick="this.parentElement.style.display='none'"><i
-                            class="fas fa-check-circle"></i></button>
+                    <button type="button" onclick="this.parentElement.style.display='none'"
+                        class="text-red-700 hover:text-red-900">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             @endif
             @if (isset($error) && $error)
@@ -36,13 +68,16 @@
                 <div
                     class="mb-6 p-4 bg-red-100 text-red-700 border border-red-300 rounded-md shadow-sm flex justify-between items-center">
                     <span>{{ $error }}</span>
-                    <button type="button" onclick="this.parentElement.style.display='none'">&times;</button>
+                    <button type="button" onclick="this.parentElement.style.display='none'"
+                        class="text-red-700 hover:text-red-900">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             @endif
 
 
             <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
-                <h1 class="text-2xl font-bold text-gray-800 mb-8 border-b pb-4">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 border-b pb-4">
                     <i class="fas fa-shopping-cart text-red-500 mr-3"></i>Keranjang Belanja Anda
                 </h1>
 
@@ -59,7 +94,7 @@
                                     ? \Carbon\Carbon::parse($item['event_id']['start_time'])->isoFormat('D MMMM YYYY')
                                     : 'Tanggal Tidak Diketahui';
 
-                                if (isset($item['detail_id'])) {
+                                if (isset($item['detail_id']) && $item['detail_id'] !== null) {
                                     $itemName = $item['detail_id']['title'] ?? 'Sesi Event';
                                     $itemPrice = floatval(
                                         $item['detail_id']['price']['$numberDecimal'] ??
@@ -68,7 +103,7 @@
                                     if (isset($item['event_id']['poster_url'])) {
                                         $itemImage = $item['event_id']['poster_url'];
                                     }
-                                } elseif (isset($item['package_id'])) {
+                                } elseif (isset($item['package_id']) && $item['package_id'] !== null) {
                                     $itemName = $item['package_id']['package_name'] ?? 'Paket Event';
                                     $itemPrice = floatval(
                                         $item['package_id']['price']['$numberDecimal'] ??
@@ -95,8 +130,7 @@
                                     <form action="{{ route('cart.item.remove', $item['_id']) }}" method="POST"
                                         onsubmit="return confirm('Apakah Anda yakin ingin menghapus item ini?');">
                                         @csrf
-                                        {{-- Method spoofing untuk DELETE jika rute Anda menggunakan DELETE --}}
-                                        {{-- @method('DELETE') --}}
+                                        {{-- @method('DELETE') --}} {{-- Uncomment jika rute Anda menggunakan DELETE --}}
                                         <button type="submit"
                                             class="text-xs text-gray-500 hover:text-red-600 transition duration-150">
                                             <i class="fas fa-trash-alt mr-1"></i> Hapus
@@ -133,7 +167,7 @@
                             </div>
                         </div>
                         <div class="mt-8 text-right">
-                            <a href="{{-- route('checkout.index') --}}" {{-- Ganti dengan rute checkout Anda --}}
+                            <a href="{{ route('checkout.page') }}" {{-- Mengarahkan ke halaman checkout --}}
                                 class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg text-md transition duration-300 shadow-md hover:shadow-lg">
                                 Lanjut ke Pembayaran
                             </a>

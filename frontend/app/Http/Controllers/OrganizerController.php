@@ -4,137 +4,290 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage; // Untuk mendapatkan URL file jika disimpan secara lokal
+use Illuminate\Validation\Rule;
 
 class OrganizerController extends Controller
 {
-    protected $apiBaseUrl = 'http://localhost:5000/api/event';
+    protected $apiBaseUrl;
+
+    public function __construct()
+    {
+        // Menggunakan API_BASE_URL dari .env dan menambahkan /api/events
+        $this->apiBaseUrl = rtrim(env('API_BASE_URL', 'http://localhost:5000'), '/') . '/api/event';
+    }
 
     public function index()
     {
+        // Halaman dashboard organizer, bisa menampilkan ringkasan atau statistik event organizer
+        // Untuk saat ini, kita bisa arahkan ke daftar event atau tampilkan view dashboard sederhana.
+        // Jika ingin menampilkan event di sini juga, Anda bisa mereplikasi logika dari method events().
         return view('organizer.index');
     }
 
     public function events(Request $request)
     {
         $page = $request->query('page', 1);
-        $limit = $request->query('limit', 10);
+        $limit = $request->query('limit', 10); // Jumlah item per halaman
+        $search = $request->query('search');
 
-        $response = Http::get($this->apiBaseUrl, [
-            'page' => $page,
-            'limit' => $limit,
-            'organizer_id' => session()->get('userId')
-        ]);
+        try {
+            $queryParams = [
+                'page' => $page,
+                'limit' => $limit,
+                // Menggunakan 'organizer' sebagai key, sesuai dengan field di skema Event Node.js
+                // dan API endpoint GET /api/events yang seharusnya mendukung filter ini.
+                'organizer' => session()->get('userId')
+            ];
 
-        if ($response->failed()) {
-            return back()->withErrors(['error' => 'Failed to fetch events']);
+            if ($search) {
+                $queryParams['search'] = $search;
+            }
+
+            // Pemanggilan API ke endpoint yang benar (this->apiBaseUrl sudah /api/events)
+            $response = Http::get($this->apiBaseUrl, $queryParams);
+
+            if ($response->failed()) {
+                Log::error('Organizer Events - API request failed: Status ' . $response->status() . ' - Body: ' . $response->body());
+                return back()->with('error', 'Gagal mengambil daftar event Anda. Kode Status: ' . $response->status());
+            }
+
+            $responseData = $response->json();
+
+            // Memastikan respons API memiliki struktur yang diharapkan
+            if (isset($responseData['success']) && $responseData['success'] === true && isset($responseData['data'])) {
+                return view('organizer.events.index', [
+                    'events' => $responseData['data'], // Data event ada di dalam 'data'
+                    'totalPages' => $responseData['totalPages'] ?? 1,
+                    'currentPage' => $responseData['currentPage'] ?? 1,
+                    'totalEvents' => $responseData['totalEvents'] ?? 0,
+                    'searchFilter' => $search
+                ]);
+            }
+
+            // Jika success false atau struktur data tidak sesuai
+            Log::error('Organizer Events - API returned success:false or unexpected structure: ' . $response->body());
+            return back()->with('error', $responseData['message'] ?? 'Gagal mengambil data event dari API.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Organizer Events - API connection error: ' . $e->getMessage());
+            return back()->with('error', 'Tidak dapat terhubung ke layanan event. Mohon coba lagi nanti.');
+        } catch (\Exception $e) {
+            Log::error('Organizer Events - Generic error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan tidak terduga saat mengambil daftar event.');
         }
-
-        $data = $response->json();
-
-        return view('organizer.events.index', [
-            'events' => $data['events'],
-            'totalPages' => $data['totalPages'],
-            'currentPage' => $data['currentPage'],
-        ]);
     }
 
     public function createEvent()
     {
-        return view('organizer.events.create');
+        // Anda mungkin perlu mengambil daftar fakultas dari API untuk ditampilkan di form
+        $faculties = [];
+        try {
+            $facultyResponse = Http::get(rtrim(env('API_BASE_URL', 'http://localhost:5000'), '/') . '/api/faculties'); // Asumsi endpoint fakultas
+            if ($facultyResponse->successful() && isset($facultyResponse->json()['data'])) {
+                $faculties = $facultyResponse->json()['data'];
+            } else {
+                Log::warning('Organizer Create Event - Failed to fetch faculties: ' . $facultyResponse->body());
+            }
+        } catch (\Exception $e) {
+            Log::error('Organizer Create Event - Exception fetching faculties: ' . $e->getMessage());
+        }
+        return view('organizer.events.create', compact('faculties'));
     }
 
     public function storeEvent(Request $request)
     {
-        $validated = $request->validate([
+        // Validasi disesuaikan dengan skema Event Node.js yang baru
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'start_time' => 'required|date_format:Y-m-d\TH:i',
+            'location' => 'required|string|max:255',
+            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Untuk file upload
+            'max_participants' => 'required|integer|min:1', // Sesuai skema: max_participant
+            'faculty' => 'required|string', // ID fakultas (string ObjectId)
+            'registration_deadline' => 'required|date_format:Y-m-d\TH:i|after_or_equal:now',
+            'start_time' => 'required|date_format:Y-m-d\TH:i|after:registration_deadline',
             'end_time' => 'required|date_format:Y-m-d\TH:i|after:start_time',
-            'location' => 'required|string',
-            'speaker' => 'nullable|string|max:255',
-            'registration_fee' => 'nullable|numeric|min:0',
-            'max_participants' => 'nullable|integer|min:1',
-            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'description' => 'nullable|string', // Jika ada di skema Event Node.js
         ]);
 
-        $posterPath = null;
+        $payload = $validatedData;
+        $payload['organizer'] = session()->get('userId'); // Field di API adalah 'organizer'
+
         if ($request->hasFile('poster')) {
-            $posterPath = $request->file('poster')->store('posters', 'public');
+            $path = $request->file('poster')->store('public/event_posters');
+            $payload['poster_url'] = Storage::url($path);
+        } else {
+            $payload['poster_url'] = $request->input('existing_poster_url'); // Jika ada field untuk URL poster yang sudah ada
         }
 
-        $postData = array_merge($validated, [
-            'organizer_id' => session()->get('userId'),
-            'poster_url' => $posterPath ? $posterPath : null,
-        ]);
+        unset($payload['poster']); // Hapus file input dari payload
 
-        $response = Http::post($this->apiBaseUrl, $postData);
+        try {
+            $response = Http::post($this->apiBaseUrl, $payload); // POST ke /api/events
+            $responseData = $response->json();
 
-        if ($response->successful()) {
-            return redirect()->route('organizer.events.index')->with('success', 'Event created successfully.');
+            if ($response->successful() && isset($responseData['success']) && $responseData['success'] === true) {
+                return redirect()->route('organizer.events.index')->with('success', $responseData['message'] ?? 'Event berhasil dibuat.');
+            }
+
+            Log::error('Organizer Store Event - API request failed: ' . $response->body());
+            return back()->withInput()->with('error', $responseData['message'] ?? 'Gagal membuat event. Periksa kembali data Anda.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Organizer Store Event - API connection error: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Tidak dapat terhubung ke layanan event.');
+        } catch (\Exception $e) {
+            Log::error('Organizer Store Event - Generic error: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat membuat event.');
         }
-
-        return back()->withErrors(['error' => 'Failed to create event'])->withInput();
     }
 
     public function showEvent($id)
     {
-        $response = Http::get("{$this->apiBaseUrl}/{$id}");
+        try {
+            $response = Http::get("{$this->apiBaseUrl}/{$id}"); // GET ke /api/events/{id}
 
-        if ($response->failed()) {
-            return back()->withErrors(['error' => 'Event not found']);
+            if ($response->failed()) {
+                Log::error("Organizer Show Event - API request for event {$id} failed: " . $response->body());
+                if ($response->status() == 404) {
+                    return redirect()->route('organizer.events.index')->with('error', 'Event tidak ditemukan.');
+                }
+                return back()->with('error', 'Gagal mengambil detail event. Status: ' . $response->status());
+            }
+
+            $responseData = $response->json();
+            if (isset($responseData['success']) && $responseData['success'] === true && isset($responseData['data'])) {
+                $event = ['data' => $responseData['data']]; // Bungkus dalam 'data' agar konsisten dengan view
+                // Jika API sudah mengembalikan event_details ter-nesting di $responseData['data']['details']
+                // maka tidak perlu panggilan API tambahan di sini.
+                // Jika tidak, Anda perlu mengambilnya terpisah:
+                // $detailsResponse = Http::get(rtrim(env('API_BASE_URL', 'http://localhost:5000'), '/') . "/api/event-details/by-event/{$id}");
+                // if ($detailsResponse->successful() && isset($detailsResponse->json()['data'])) {
+                //    $event['data']['details'] = $detailsResponse->json()['data'];
+                // } else {
+                //    $event['data']['details'] = [];
+                // }
+                return view('organizer.events.show', compact('event'));
+            }
+
+            return redirect()->route('organizer.events.index')->with('error', $responseData['message'] ?? 'Gagal mengambil detail event.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error("Organizer Show Event - API connection error for event {$id}: " . $e->getMessage());
+            return redirect()->route('organizer.events.index')->with('error', 'Tidak dapat terhubung ke layanan event.');
+        } catch (\Exception $e) {
+            Log::error("Organizer Show Event - Generic error for event {$id}: " . $e->getMessage());
+            return redirect()->route('organizer.events.index')->with('error', 'Terjadi kesalahan.');
         }
-
-        $event = $response->json();
-
-        return view('organizer.events.show', compact('event'));
     }
 
     public function editEvent($id)
     {
-        $response = Http::get("{$this->apiBaseUrl}/{$id}");
+        try {
+            $eventResponse = Http::get("{$this->apiBaseUrl}/{$id}"); // GET ke /api/events/{id}
+            if ($eventResponse->failed()) {
+                Log::error("Organizer Edit Event - API request for event {$id} failed: " . $eventResponse->body());
+                if ($eventResponse->status() == 404) {
+                    return redirect()->route('organizer.events.index')->with('error', 'Event tidak ditemukan.');
+                }
+                return redirect()->route('organizer.events.index')->with('error', 'Gagal mengambil data event untuk diedit.');
+            }
 
-        if ($response->failed()) {
-            return back()->withErrors(['error' => 'Event not found']);
+            $eventResponseData = $eventResponse->json();
+            if (isset($eventResponseData['success']) && $eventResponseData['success'] === true && isset($eventResponseData['data'])) {
+                $event = ['data' => $eventResponseData['data']]; // Bungkus dalam 'data'
+
+                // Ambil juga daftar fakultas untuk dropdown di form edit
+                $faculties = [];
+                $facultyResponse = Http::get(rtrim(env('API_BASE_URL', 'http://localhost:5000'), '/') . '/api/faculties');
+                if ($facultyResponse->successful() && isset($facultyResponse->json()['data'])) {
+                    $faculties = $facultyResponse->json()['data'];
+                } else {
+                    Log::warning('Organizer Edit Event - Failed to fetch faculties: ' . $facultyResponse->body());
+                }
+                return view('organizer.events.edit', compact('event', 'faculties'));
+            }
+
+            return redirect()->route('organizer.events.index')->with('error', $eventResponseData['message'] ?? 'Gagal mengambil data event.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error("Organizer Edit Event - API connection error for event {$id}: " . $e->getMessage());
+            return redirect()->route('organizer.events.index')->with('error', 'Tidak dapat terhubung ke layanan event.');
+        } catch (\Exception $e) {
+            Log::error("Organizer Edit Event - Generic error for event {$id}: " . $e->getMessage());
+            return redirect()->route('organizer.events.index')->with('error', 'Terjadi kesalahan.');
         }
-
-        $event = $response->json();
-
-        return view('organizer.events.edit', compact('event'));
     }
 
     public function updateEvent(Request $request, $id)
     {
-        $validated = $request->validate([
+        $validatedData = $request->validate([
             'name' => 'sometimes|required|string|max:255',
+            'location' => 'sometimes|required|string|max:255',
+            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'max_participants' => 'sometimes|required|integer|min:1', // Sesuai skema: max_participant
+            'faculty' => 'sometimes|required|string', // ID Fakultas
+            'registration_deadline' => 'sometimes|required|date_format:Y-m-d\TH:i', // Validasi after_or_equal:now bisa opsional saat update
             'start_time' => 'sometimes|required|date_format:Y-m-d\TH:i',
             'end_time' => 'sometimes|required|date_format:Y-m-d\TH:i|after:start_time',
-            'location' => 'sometimes|required|string',
-            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'description' => 'nullable|string',
         ]);
 
-        $posterPath = null;
+        $payload = $request->only(array_keys($validatedData));
+
         if ($request->hasFile('poster')) {
-            $posterPath = $request->file('poster')->store('posters', 'public');
-            $validated['poster_url'] = $posterPath;
+            // Pertimbangkan untuk menghapus poster lama jika ada
+            $path = $request->file('poster')->store('public/event_posters');
+            $payload['poster_url'] = Storage::url($path);
+        }
+        if (isset($payload['poster'])) unset($payload['poster']);
+
+        // Validasi tanggal kondisional jika ada
+        if (isset($payload['start_time']) && isset($payload['registration_deadline'])) {
+            if (strtotime($payload['start_time']) <= strtotime($payload['registration_deadline'])) {
+                return back()->withInput()->withErrors(['start_time' => 'Waktu mulai event harus setelah batas waktu pendaftaran.']);
+            }
+        }
+        if (isset($payload['end_time']) && isset($payload['start_time'])) {
+            if (strtotime($payload['end_time']) <= strtotime($payload['start_time'])) {
+                return back()->withInput()->withErrors(['end_time' => 'Waktu selesai event harus setelah waktu mulai.']);
+            }
         }
 
-        $response = Http::put("{$this->apiBaseUrl}/{$id}", $validated);
+        try {
+            $response = Http::put("{$this->apiBaseUrl}/{$id}", $payload); // PUT ke /api/events/{id}
+            $responseData = $response->json();
 
-        if ($response->successful()) {
-            return redirect()->route('organizer.events.index')->with('success', 'Event updated successfully.');
+            if ($response->successful() && isset($responseData['success']) && $responseData['success'] === true) {
+                return redirect()->route('organizer.events.index')->with('success', $responseData['message'] ?? 'Event berhasil diperbarui.');
+            }
+
+            Log::error("Organizer Update Event - API request for event {$id} failed: " . $response->body());
+            return back()->withInput()->with('error', $responseData['message'] ?? 'Gagal memperbarui event.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error("Organizer Update Event - API connection error for event {$id}: " . $e->getMessage());
+            return back()->withInput()->with('error', 'Tidak dapat terhubung ke layanan event.');
+        } catch (\Exception $e) {
+            Log::error("Organizer Update Event - Generic error for event {$id}: " . $e->getMessage());
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat memperbarui event.');
         }
-
-        return back()->withErrors(['error' => 'Failed to update event'])->withInput();
     }
 
     public function destroyEvent($id)
     {
-        $response = Http::delete("{$this->apiBaseUrl}/{$id}");
+        try {
+            $response = Http::delete("{$this->apiBaseUrl}/{$id}"); // DELETE ke /api/events/{id}
+            $responseData = $response->json();
 
-        if ($response->successful()) {
-            return redirect()->route('organizer.events.index')->with('success', 'Event deleted successfully.');
+            if ($response->successful() && isset($responseData['success']) && $responseData['success'] === true) {
+                return redirect()->route('organizer.events.index')->with('success', $responseData['message'] ?? 'Event berhasil dihapus.');
+            }
+
+            Log::error("Organizer Destroy Event - API request for event {$id} failed: " . $response->body());
+            return back()->with('error', $responseData['message'] ?? 'Gagal menghapus event.');
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error("Organizer Destroy Event - API connection error for event {$id}: " . $e->getMessage());
+            return back()->with('error', 'Tidak dapat terhubung ke layanan event.');
+        } catch (\Exception $e) {
+            Log::error("Organizer Destroy Event - Generic error for event {$id}: " . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat menghapus event.');
         }
-
-        return back()->withErrors(['error' => 'Failed to delete event']);
     }
 }

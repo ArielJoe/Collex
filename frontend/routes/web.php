@@ -26,7 +26,16 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.su
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/event/{id}', [EventController::class, 'show'])->name('event.show');
-Route::post('/event/{eventId}/register-and-pay', [PaymentController::class, 'registerAndPay'])->name('event.register.and.pay');
+
+Route::prefix('/')->group(function () {
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/item/{cartItemId}/remove', [CartController::class, 'removeItem'])->name('cart.item.remove');
+    Route::post('/cart/clear', [CartController::class, 'clearCart'])->name('cart.clear');
+
+    // Rute untuk Checkout dan Proses Pembayaran dari Keranjang
+    Route::get('/checkout', [PaymentController::class, 'checkoutPage'])->name('checkout.page');
+    Route::post('/checkout/process', [PaymentController::class, 'processCartCheckout'])->name('checkout.process');
+});
 
 // Cart Routes
 Route::prefix('cart')->name('cart.')->group(function () { // Pastikan middleware auth Laravel Anda benar

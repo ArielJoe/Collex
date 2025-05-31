@@ -90,6 +90,7 @@ router.post('/add', async (req, res) => {
 router.get('/:user_id', async (req, res) => {
     // Ambil user_id dari parameter rute.
     const { user_id } = req.params;
+    console.log(user_id);
     // Alternatif: jika dari query string: const { user_id } = req.query; dan rute adalah GET /api/cart
 
     if (!user_id) {
