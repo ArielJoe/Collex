@@ -32,6 +32,7 @@ router.post("/login", async (req, res) => {
         id: user._id,
         email: user.email,
         full_name: user.full_name,
+        phone_number: user.phone_number,
         role: user.role,
         photo_url: user.photo_url, // Mengembalikan photo_url jika ada
       },

@@ -21,7 +21,7 @@
                         <a class="px-4 py-2 text-lg {{ request()->routeIs('cart.index') ? 'rounded-lg text-red-600 font-bold hover:bg-red-600 hover:text-white' : 'text-gray-600 hover:text-red-600' }} transition relative"
                             href="{{ route('cart.index') }}">
                             <i class="fas fa-shopping-cart mr-1"></i>
-                            Keranjang
+                            {{-- Keranjang --}}
                             {{-- Anda bisa menambahkan counter item keranjang di sini jika ada --}}
                             {{-- <span class="absolute top-0 right-0 -mt-1 -mr-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center cart-item-count">0</span> --}}
                         </a>

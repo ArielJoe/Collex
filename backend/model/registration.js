@@ -6,6 +6,7 @@ const RegistrationSchema = Schema({
     event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', required: true },
     detail_id: { type: mongoose.Schema.Types.ObjectId, ref: 'EventDetail' },
     package_id: { type: mongoose.Schema.Types.ObjectId, ref: 'EventPackage' },
+    payment_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', required: true },
     registration_date: { type: Date, default: Date.now },
 }, {
     collection: "registration",

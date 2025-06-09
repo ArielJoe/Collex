@@ -2,7 +2,6 @@ import { Schema, model } from 'mongoose';
 import mongoose from 'mongoose';
 
 const PaymentSchema = Schema({
-    registration_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Registration', required: true },
     proof_url: { type: String, required: true },
     amount: { type: mongoose.Schema.Types.Decimal128, required: true },
     status: {

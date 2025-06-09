@@ -7,6 +7,7 @@ import userRoutes from "./routes/user.js";
 import eventRoutes from "./routes/event.js";
 import cartRoutes from "./routes/cart.js";
 import paymentRoutes from "./routes/payment.js";
+import registrationRoutes from "./routes/registration.js";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/event", eventRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/registration", registrationRoutes);
 
 const PORT = 5000;
 

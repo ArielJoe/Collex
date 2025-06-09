@@ -8,8 +8,6 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "../config/db.js";
 
 // Model imports - ensure these paths and filenames match your project structure
-// The new schemas use ES Modules, so 'import' is appropriate.
-// Assuming model files are in '../model/' and have capitalized names like 'Faculty.js'
 import Faculty from "../model/Faculty.js";
 import User from "../model/User.js";
 import Event from "../model/Event.js";
@@ -59,7 +57,7 @@ const seedDatabase = async () => {
         const usersToCreate = [];
         const roles = ["member", "admin", "finance", "organizer"];
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash("123", salt); // Password diubah menjadi "123"
+        const hashedPassword = await bcrypt.hash("123", salt);
 
         for (let i = 0; i < 40; i++) {
             usersToCreate.push({
@@ -72,7 +70,7 @@ const seedDatabase = async () => {
                 is_active: faker.datatype.boolean(0.9),
             });
         }
-        const criticalRolesToEnsure = ["admin", "finance", "organizer", "member"]; // Pastikan ada member juga
+        const criticalRolesToEnsure = ["admin", "finance", "organizer", "member"];
         for (const role of criticalRolesToEnsure) {
             if (!usersToCreate.some(u => u.role === role)) {
                 usersToCreate.push({
@@ -104,9 +102,7 @@ const seedDatabase = async () => {
         for (let i = 0; i < 10; i++) {
             const deadlineDays = faker.number.int({ min: 7, max: 90 });
             const registrationDeadline = faker.date.soon({ days: deadlineDays });
-
             const eventStartTime = faker.date.soon({ days: faker.number.int({ min: 1, max: 7 }), refDate: registrationDeadline });
-
             let eventEndTime;
             if (faker.datatype.boolean()) {
                 eventEndTime = faker.date.soon({ hours: faker.number.int({ min: 2, max: 8 }), refDate: eventStartTime });
@@ -124,19 +120,16 @@ const seedDatabase = async () => {
             if (eventEndTime <= eventStartTime) {
                 eventEndTime = new Date(eventStartTime.getTime() + faker.number.int({ min: 2, max: 8 }) * 60 * 60 * 1000);
             }
-
             eventsData.push({
                 name: faker.company.catchPhrase() + " " + faker.helpers.arrayElement(["Summit", "Workshop", "Conference", "Fest"]),
                 location: faker.location.city() + ", " + faker.location.streetAddress(),
-                poster_url: faker.image.urlPicsumPhotos(), // Diubah ke urlPicsumPhotos
-                // registered_participant: default 0 dari schema
+                poster_url: faker.image.urlPicsumPhotos(),
                 max_participant: faker.number.int({ min: 50, max: 500 }),
                 organizer: defaultOrganizer._id,
                 faculty: faker.helpers.arrayElement(createdFaculties)._id,
                 registration_deadline: registrationDeadline,
                 start_time: eventStartTime,
                 end_time: eventEndTime,
-                // created_at akan default via schema
             });
         }
         const createdEvents = await Event.insertMany(eventsData);
@@ -146,61 +139,50 @@ const seedDatabase = async () => {
         console.log("Seeding event details...");
         const eventDetailsData = [];
         for (const event of createdEvents) {
-            const numberOfDetails = faker.number.int({ min: 1, max: 3 }); // Kurangi jumlah detail per event agar tidak terlalu banyak
+            const numberOfDetails = faker.number.int({ min: 1, max: 3 });
             for (let i = 0; i < numberOfDetails; i++) {
-                // Pastikan start_time dan end_time detail berada dalam rentang event induk
                 let detailStartTime = faker.date.between({ from: event.start_time, to: event.end_time });
                 let detailEndTime = faker.date.soon({ hours: faker.number.int({ min: 1, max: 4 }), refDate: detailStartTime });
-
-                // Validasi agar detailEndTime tidak melebihi event.end_time dan setelah detailStartTime
-                if (detailEndTime > event.end_time) {
-                    detailEndTime = event.end_time;
-                }
+                if (detailEndTime > event.end_time) detailEndTime = event.end_time;
                 if (detailEndTime <= detailStartTime) {
-                    detailEndTime = new Date(detailStartTime.getTime() + faker.number.int({ min: 1, max: 3 }) * 60 * 60 * 1000); // 1-3 jam setelah start
-                    if (detailEndTime > event.end_time) {
-                        detailEndTime = event.end_time;
-                    }
-                }
-                // Jika masih bermasalah (misal start_time detail = end_time event), geser sedikit start_time detail
-                if (detailStartTime >= detailEndTime && detailStartTime < event.end_time) {
-                    detailStartTime = new Date(event.start_time.getTime() + i * 60 * 60 * 1000); // Offset start time
                     detailEndTime = new Date(detailStartTime.getTime() + faker.number.int({ min: 1, max: 3 }) * 60 * 60 * 1000);
                     if (detailEndTime > event.end_time) detailEndTime = event.end_time;
-                    if (detailStartTime >= detailEndTime) detailStartTime = new Date(event.end_time.getTime() - 60 * 60 * 1000); // fallback 1 jam sebelum event berakhir
                 }
-                if (detailStartTime >= detailEndTime) { // Final fallback jika masih invalid
+                if (detailStartTime >= detailEndTime && detailStartTime < event.end_time) {
+                    detailStartTime = new Date(event.start_time.getTime() + i * 60 * 60 * 1000);
+                    detailEndTime = new Date(detailStartTime.getTime() + faker.number.int({ min: 1, max: 3 }) * 60 * 60 * 1000);
+                    if (detailEndTime > event.end_time) detailEndTime = event.end_time;
+                    if (detailStartTime >= detailEndTime) detailStartTime = new Date(event.end_time.getTime() - 60 * 60 * 1000);
+                }
+                if (detailStartTime >= detailEndTime) {
                     console.warn(`Could not generate valid time for event detail for event ${event._id}. Skipping this detail.`);
                     continue;
                 }
-
-
                 eventDetailsData.push({
                     event_id: event._id,
-                    title: faker.lorem.sentence(4) + (i === 0 ? " (Pembukaan)" : ` (Sesi ${i + 1})`), // Diubah dari session_title
-                    start_time: detailStartTime, // Tipe Date
-                    end_time: detailEndTime,     // Tipe Date
+                    title: faker.lorem.sentence(4) + (i === 0 ? " (Pembukaan)" : ` (Sesi ${i + 1})`),
+                    start_time: detailStartTime,
+                    end_time: detailEndTime,
                     location: "Ruang " + faker.string.alphanumeric(3).toUpperCase() + " / " + faker.location.city(),
-                    speaker: faker.person.fullName(), // Required
-                    description: faker.lorem.paragraphs(2), // Required
+                    speaker: faker.person.fullName(),
+                    description: faker.lorem.paragraphs(2),
                     price: mongoose.Types.Decimal128.fromString(faker.commerce.price({ min: 0, max: 250000, dec: 0 })),
                 });
             }
         }
-        let createdEventDetails = []; // Deklarasi di luar if
+        let createdEventDetails = [];
         if (eventDetailsData.length > 0) {
             createdEventDetails = await EventDetail.insertMany(eventDetailsData);
             console.log(`${createdEventDetails.length} event details seeded.`);
         } else {
-            console.log("No event details seeded (possibly due to time generation issues or no events).");
+            console.log("No event details seeded.");
         }
-
 
         // --- 5. Seed Event Packages ---
         console.log("Seeding event packages...");
         const eventPackagesData = [];
         for (const event of createdEvents) {
-            const numberOfPackages = faker.number.int({ min: 0, max: 2 }); // Bisa jadi event tidak punya paket
+            const numberOfPackages = faker.number.int({ min: 0, max: 2 });
             for (let i = 0; i < numberOfPackages; i++) {
                 eventPackagesData.push({
                     event_id: event._id,
@@ -210,7 +192,7 @@ const seedDatabase = async () => {
                 });
             }
         }
-        let createdEventPackages = []; // Deklarasi di luar if, inisialisasi dengan array kosong
+        let createdEventPackages = [];
         if (eventPackagesData.length > 0) {
             createdEventPackages = await EventPackage.insertMany(eventPackagesData);
             console.log(`${createdEventPackages.length} event packages seeded.`);
@@ -218,126 +200,106 @@ const seedDatabase = async () => {
             console.log("No event packages seeded.");
         }
 
-
-        // --- 6. Seed Registrations ---
-        console.log("Seeding registrations...");
-        const registrationsData = [];
+        // --- 6. Seed Registrations & Payments (Integrated) ---
+        console.log("Seeding registrations and payments...");
         const availableUsersForReg = memberUsers.length > 0 ? memberUsers : createdUsers.filter(u => u.role !== 'admin' && u.role !== 'organizer' && u.role !== 'finance');
-
-        // const allEventDetails = await EventDetail.find(); // Tidak perlu query lagi jika createdEventDetails sudah ada
-        const allEventDetails = createdEventDetails; // Gunakan variabel yang sudah ada
+        const allEventDetails = createdEventDetails;
+        const createdRegistrations = [];
+        const createdPayments = [];
 
         for (let i = 0; i < 50 && availableUsersForReg.length > 0 && createdEvents.length > 0; i++) {
             const user = faker.helpers.arrayElement(availableUsersForReg);
             const event = faker.helpers.arrayElement(createdEvents);
             let detailId = null;
             let packageId = null;
+            let itemPrice = mongoose.Types.Decimal128.fromString("0.00");
 
-            if (faker.datatype.boolean(0.7)) { // 70% chance to register for a detail
+            if (faker.datatype.boolean(0.7) && allEventDetails.length > 0) {
                 const detailsForThisEvent = allEventDetails.filter(ed => ed.event_id.equals(event._id));
                 if (detailsForThisEvent.length > 0) {
-                    detailId = faker.helpers.arrayElement(detailsForThisEvent)._id;
+                    const selectedDetail = faker.helpers.arrayElement(detailsForThisEvent);
+                    detailId = selectedDetail._id;
+                    itemPrice = selectedDetail.price;
                 }
-            } else { // 30% chance to register for a package
-                // Pastikan createdEventPackages adalah array meskipun kosong
-                const packagesForThisEvent = (createdEventPackages || []).filter(ep => ep.event_id.equals(event._id));
+            } else if (createdEventPackages.length > 0) {
+                const packagesForThisEvent = createdEventPackages.filter(ep => ep.event_id.equals(event._id));
                 if (packagesForThisEvent.length > 0) {
-                    packageId = faker.helpers.arrayElement(packagesForThisEvent)._id;
+                    const selectedPackage = faker.helpers.arrayElement(packagesForThisEvent);
+                    packageId = selectedPackage._id;
+                    itemPrice = selectedPackage.price;
                 }
             }
 
-            if (!detailId && !packageId) {
+            if (!detailId && !packageId) { // Fallback jika tidak terpilih
                 const detailsForThisEvent = allEventDetails.filter(ed => ed.event_id.equals(event._id));
-                const packagesForThisEvent = (createdEventPackages || []).filter(ep => ep.event_id.equals(event._id));
+                const packagesForThisEvent = createdEventPackages.filter(ep => ep.event_id.equals(event._id));
                 if (detailsForThisEvent.length > 0) {
-                    detailId = faker.helpers.arrayElement(detailsForThisEvent)._id;
+                    const selectedDetail = faker.helpers.arrayElement(detailsForThisEvent);
+                    detailId = selectedDetail._id;
+                    itemPrice = selectedDetail.price;
                 } else if (packagesForThisEvent.length > 0) {
-                    packageId = faker.helpers.arrayElement(packagesForThisEvent)._id;
+                    const selectedPackage = faker.helpers.arrayElement(packagesForThisEvent);
+                    packageId = selectedPackage._id;
+                    itemPrice = selectedPackage.price;
                 }
             }
-
 
             if (detailId || packageId) {
-                registrationsData.push({
+                const paymentStatus = faker.helpers.arrayElement(['pending', 'confirmed', 'rejected']);
+                let confirmedBy = null;
+                let confirmedAt = null;
+
+                if (paymentStatus === "confirmed") {
+                    confirmedBy = defaultFinanceConfirmer._id;
+                    confirmedAt = faker.date.recent({ days: 10 });
+                }
+
+                // Step 1: Create Registration first (without saving to get _id)
+                const registration = new Registration({
                     user_id: user._id,
                     event_id: event._id,
                     detail_id: detailId,
                     package_id: packageId,
+                    // payment_id will be set after payment is created
                 });
+
+                // Step 2: Create Payment with the registration _id
+                const payment = new Payment({
+                    proof_url: faker.image.urlLoremFlickr({ category: 'abstract' }),
+                    amount: itemPrice,
+                    status: paymentStatus,
+                    confirmed_by: confirmedBy,
+                    confirmed_at: confirmedAt,
+                    user_id: user._id,
+                });
+
+                // Step 3: Set payment_id in registration
+                registration.payment_id = payment._id;
+
+                // Step 4: Save both documents
+                const savedPayment = await payment.save();
+                const savedRegistration = await registration.save();
+
+                createdPayments.push(savedPayment);
+                createdRegistrations.push(savedRegistration);
             }
         }
-        let createdRegistrations = []; // Deklarasi di luar if
-        if (registrationsData.length > 0) {
-            createdRegistrations = await Registration.insertMany(registrationsData);
-            console.log(`${createdRegistrations.length} registrations seeded.`);
-        } else {
-            console.log("No registrations seeded.");
-        }
 
-
-        // --- 7. Seed Payments ---
-        console.log("Seeding payments...");
-        const paymentsData = [];
-        // const allRegistrations = await Registration.find(); // Tidak perlu query lagi
-        const allRegistrations = createdRegistrations; // Gunakan variabel yang sudah ada
-
-        for (const reg of allRegistrations) {
-            if (reg.payment_status !== 'pending' || faker.datatype.boolean(0.6)) {
-                let amount = mongoose.Types.Decimal128.fromString("0.00");
-                if (reg.detail_id) {
-                    const detail = allEventDetails.find(d => d._id.equals(reg.detail_id));
-                    if (detail) amount = detail.price;
-                } else if (reg.package_id) {
-                    const pkg = (createdEventPackages || []).find(p => p._id.equals(reg.package_id));
-                    if (pkg) amount = pkg.price;
-                }
-
-                if (parseFloat(amount.toString()) > 0 || reg.payment_status !== 'pending') {
-                    let confirmedBy = null;
-                    let confirmedAt = null;
-                    const paymentCreatedAt = reg.registration_date || new Date();
-
-                    if (reg.payment_status === "confirmed") {
-                        confirmedBy = defaultFinanceConfirmer._id;
-                        const now = new Date();
-                        if (paymentCreatedAt < now) {
-                            confirmedAt = faker.date.between({ from: paymentCreatedAt, to: now });
-                        } else {
-                            confirmedAt = paymentCreatedAt > now ? now : paymentCreatedAt;
-                        }
-                    }
-
-                    paymentsData.push({
-                        registration_id: reg._id,
-                        proof_url: faker.image.urlLoremFlickr({ category: 'receipt,document' }),
-                        amount: amount,
-                        status: reg.payment_status,
-                        confirmed_by: confirmedBy,
-                        confirmed_at: confirmedAt,
-                    });
-                }
-            }
-        }
-        if (paymentsData.length > 0) {
-            const createdPayments = await Payment.insertMany(paymentsData);
-            console.log(`${createdPayments.length} payments seeded.`);
-        } else {
-            console.log("No payments seeded.");
-        }
-
+        console.log(`${createdRegistrations.length} registrations seeded.`);
+        console.log(`${createdPayments.length} payments seeded.`);
 
         // --- 8. Seed Attendances ---
         console.log("Seeding attendances...");
         const attendancesData = [];
-        for (const reg of allRegistrations) {
-            if (reg.payment_status === 'confirmed' && reg.detail_id) {
+        for (const reg of createdRegistrations) {
+            const paymentForReg = createdPayments.find(p => p._id.equals(reg.payment_id));
+            if (paymentForReg && paymentForReg.status === 'confirmed' && reg.detail_id) {
                 const eventDetail = allEventDetails.find(ed => ed._id.equals(reg.detail_id));
                 if (eventDetail && faker.datatype.boolean(0.85)) {
                     let scanTime = faker.date.between({ from: eventDetail.start_time, to: eventDetail.end_time });
-                    if (scanTime < eventDetail.start_time || scanTime > eventDetail.end_time) { // Double check
+                    if (scanTime < eventDetail.start_time || scanTime > eventDetail.end_time) {
                         scanTime = eventDetail.start_time;
                     }
-
                     attendancesData.push({
                         registration_id: reg._id,
                         detail_id: reg.detail_id,
@@ -348,59 +310,39 @@ const seedDatabase = async () => {
                 }
             }
         }
-        let createdAttendances = []; // Deklarasi di luar if
-        if (attendancesData.length > 0) {
-            createdAttendances = await Attendance.insertMany(attendancesData);
-            console.log(`${createdAttendances.length} attendances seeded.`);
-        } else {
-            console.log("No attendances seeded.");
-        }
-
 
         // --- 9. Seed Certificates ---
-        console.log("Seeding certificates...");
-        const certificatesData = [];
-        // const allAttendances = await Attendance.find(); // Tidak perlu query lagi
-        const allAttendances = createdAttendances; // Gunakan variabel yang sudah ada
-
-        for (const att of allAttendances) {
-            certificatesData.push({
-                registration_id: att.registration_id,
-                detail_id: att.detail_id,
-                certificate_url: faker.internet.url() + `/certificates/${att.registration_id}-${att.detail_id}.pdf`,
-                uploaded_by: defaultScannerOrUploader._id,
-            });
-        }
-        if (certificatesData.length > 0) {
-            const createdCertificates = await Certificate.insertMany(certificatesData);
-            console.log(`${createdCertificates.length} certificates seeded.`);
-        } else {
-            console.log("No certificates seeded.");
-        }
+        // console.log("Seeding certificates...");
+        // const certificatesData = [];
+        // for (const att of createdAttendances) {
+        //     certificatesData.push({
+        //         registration_id: att.registration_id,
+        //         detail_id: att.detail_id,
+        //         certificate_url: faker.internet.url() + `/certificates/${att.registration_id}-${att.detail_id}.pdf`,
+        //         uploaded_by: defaultScannerOrUploader._id,
+        //     });
+        // }
 
         // --- 10. Seed Carts ---
         console.log("Seeding carts...");
         const cartsData = [];
         const usersForCart = memberUsers.length > 0 ? memberUsers.slice(0, 10) : createdUsers.filter(u => u.role === 'member').slice(0, 10);
-
         for (const user of usersForCart) {
             if (faker.datatype.boolean(0.5) && createdEvents.length > 0) {
                 const event = faker.helpers.arrayElement(createdEvents);
                 let detailId = null;
                 let packageId = null;
-
-                if (faker.datatype.boolean()) {
+                if (faker.datatype.boolean() && allEventDetails.length > 0) {
                     const detailsForThisEvent = allEventDetails.filter(ed => ed.event_id.equals(event._id));
                     if (detailsForThisEvent.length > 0) {
                         detailId = faker.helpers.arrayElement(detailsForThisEvent)._id;
                     }
-                } else {
-                    const packagesForThisEvent = (createdEventPackages || []).filter(ep => ep.event_id.equals(event._id));
+                } else if (createdEventPackages.length > 0) {
+                    const packagesForThisEvent = createdEventPackages.filter(ep => ep.event_id.equals(event._id));
                     if (packagesForThisEvent.length > 0) {
                         packageId = faker.helpers.arrayElement(packagesForThisEvent)._id;
                     }
                 }
-
                 if (detailId || packageId) {
                     cartsData.push({
                         user_id: user._id,
@@ -412,8 +354,8 @@ const seedDatabase = async () => {
             }
         }
         if (cartsData.length > 0) {
-            const createdCarts = await Cart.insertMany(cartsData);
-            console.log(`${createdCarts.length} carts seeded.`);
+            await Cart.insertMany(cartsData);
+            console.log(`${cartsData.length} carts seeded.`);
         } else {
             console.log("No carts seeded.");
         }
@@ -423,7 +365,7 @@ const seedDatabase = async () => {
     } catch (err) {
         console.error("Seeding failed catastrophically:", err);
     } finally {
-        if (mongoose.connection.readyState === 1) { // 1 === connected
+        if (mongoose.connection.readyState === 1) {
             await mongoose.disconnect();
             console.log("Database disconnected.");
         }

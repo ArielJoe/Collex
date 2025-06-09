@@ -34,10 +34,11 @@ class AuthController extends Controller
         if ($response->successful()) {
             $data = $response->json();
 
+            Session::put('userId', $data['user']['id'] ?? null);
             Session::put('email', $data['user']['email'] ?? null);
             Session::put('full_name', $data['user']['full_name'] ?? null);
+            Session::put('phone_number', $data['user']['phone_number'] ?? null);
             Session::put('role', $data['user']['role'] ?? null);
-            Session::put('userId', $data['user']['id'] ?? null);
 
             $successMessage = $data['message'] ?? 'Login successful';
             return redirect('/')->with('success', $successMessage);
