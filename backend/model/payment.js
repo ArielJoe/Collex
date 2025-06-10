@@ -11,7 +11,8 @@ const PaymentSchema = Schema({
     },
     confirmed_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     confirmed_at: { type: Date },
-    created_at: { type: Date, default: Date.now }
+    created_at: { type: Date, default: Date.now },
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, {
     collection: "payment",
 });

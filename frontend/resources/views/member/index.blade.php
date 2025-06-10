@@ -1,7 +1,7 @@
 @extends('components.layout')
 
 @section('title')
-    My Tickets
+    Member
 @endsection
 
 @section('content')

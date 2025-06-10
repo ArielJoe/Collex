@@ -405,9 +405,7 @@ router.get('/all', async (req, res) => {
         if (registrationConditions.length > 0) {
             const registrationFilter = registrationConditions.length > 1 ? { $and: registrationConditions } : registrationConditions[0];
             const registrations = await Registration.find(registrationFilter).select('_id payment_id');
-
             const paymentIdsFromRegistrations = [...new Set(registrations.map(r => r.payment_id).filter(id => id))];
-
             if (paymentIdsFromRegistrations.length === 0 && (event_id || user_search)) {
                 return res.status(200).json({ success: true, data: [], totalPages: 0, currentPage: 1, totalPayments: 0 });
             }
@@ -418,16 +416,9 @@ router.get('/all', async (req, res) => {
 
         const payments = await paymentQuery
             .populate({
-                path: 'registration_id',
-                select: 'user_id event_id detail_id package_id',
-                populate: [
-                    { path: 'user_id', select: 'full_name email' },
-                    { path: 'event_id', select: 'name' },
-                    { path: 'detail_id', select: 'title' },
-                    { path: 'package_id', select: 'package_name' }
-                ]
+                path: 'user_id',
+                select: 'full_name email'
             })
-            .populate('user_id', 'full_name email')
             .populate('confirmed_by', 'full_name email')
             .sort({ created_at: -1 })
             .limit(parseInt(limit))
@@ -436,13 +427,24 @@ router.get('/all', async (req, res) => {
 
         const paymentsWithAllRegistrations = await Promise.all(payments.map(async (payment) => {
             const allLinkedRegistrations = await Registration.find({ payment_id: payment._id })
-                .populate({ path: 'user_id', select: 'full_name email' })
-                .populate({ path: 'event_id', select: 'name' })
-                .populate({ path: 'detail_id', select: 'title price' })
-                .populate({ path: 'package_id', select: 'package_name price' });
+                .populate({
+                    path: 'event_id',
+                    select: 'name' // Ensure event name is included
+                })
+                .populate({
+                    path: 'detail_id',
+                    select: 'title price' // Ensure detail title and price are included
+                })
+                .populate({
+                    path: 'package_id',
+                    select: 'package_name price' // Ensure package name and price are included
+                })
+                .populate({
+                    path: 'user_id',
+                    select: 'full_name email'
+                });
             return { ...payment.toObject(), all_registrations: allLinkedRegistrations };
         }));
-
 
         res.status(200).json({
             success: true,
@@ -451,7 +453,6 @@ router.get('/all', async (req, res) => {
             currentPage: parseInt(page),
             totalPayments: totalPayments
         });
-
     } catch (error) {
         console.error('Error fetching all payments:', error);
         res.status(500).json({ success: false, message: 'Server error while fetching payments' });

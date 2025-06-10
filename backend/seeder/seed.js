@@ -3,11 +3,9 @@ import { faker } from "@faker-js/faker";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 
-// Assuming connectDB is correctly exported from this path
-// Adjust if your file is named index.js or is directly in config
+// Adjust the import path based on your project structure
 import { connectDB } from "../config/db.js";
 
-// Model imports - ensure these paths and filenames match your project structure
 import Faculty from "../model/Faculty.js";
 import User from "../model/User.js";
 import Event from "../model/Event.js";
@@ -61,7 +59,7 @@ const seedDatabase = async () => {
 
         for (let i = 0; i < 40; i++) {
             usersToCreate.push({
-                email: faker.internet.email({ firstName: faker.person.firstName(), lastName: faker.person.lastName() }).toLowerCase(),
+                email: faker.internet.email().toLowerCase(),
                 password: hashedPassword,
                 full_name: faker.person.fullName(),
                 phone_number: faker.phone.number(),
@@ -103,27 +101,12 @@ const seedDatabase = async () => {
             const deadlineDays = faker.number.int({ min: 7, max: 90 });
             const registrationDeadline = faker.date.soon({ days: deadlineDays });
             const eventStartTime = faker.date.soon({ days: faker.number.int({ min: 1, max: 7 }), refDate: registrationDeadline });
-            let eventEndTime;
-            if (faker.datatype.boolean()) {
-                eventEndTime = faker.date.soon({ hours: faker.number.int({ min: 2, max: 8 }), refDate: eventStartTime });
-            } else {
-                const durationDays = faker.number.int({ min: 0, max: 2 });
-                if (durationDays === 0) {
-                    eventEndTime = faker.date.soon({ hours: faker.number.int({ min: 2, max: 12 }), refDate: eventStartTime });
-                } else {
-                    eventEndTime = faker.date.soon({ days: durationDays, refDate: eventStartTime });
-                }
-                if (eventEndTime.toDateString() === eventStartTime.toDateString() && eventEndTime <= eventStartTime) {
-                    eventEndTime = new Date(eventStartTime.getTime() + faker.number.int({ min: 2, max: 8 }) * 60 * 60 * 1000);
-                }
-            }
-            if (eventEndTime <= eventStartTime) {
-                eventEndTime = new Date(eventStartTime.getTime() + faker.number.int({ min: 2, max: 8 }) * 60 * 60 * 1000);
-            }
+            const eventEndTime = faker.date.soon({ hours: faker.number.int({ min: 2, max: 12 }), refDate: eventStartTime });
             eventsData.push({
                 name: faker.company.catchPhrase() + " " + faker.helpers.arrayElement(["Summit", "Workshop", "Conference", "Fest"]),
                 location: faker.location.city() + ", " + faker.location.streetAddress(),
                 poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
                 max_participant: faker.number.int({ min: 50, max: 500 }),
                 organizer: defaultOrganizer._id,
                 faculty: faker.helpers.arrayElement(createdFaculties)._id,
@@ -146,17 +129,6 @@ const seedDatabase = async () => {
                 if (detailEndTime > event.end_time) detailEndTime = event.end_time;
                 if (detailEndTime <= detailStartTime) {
                     detailEndTime = new Date(detailStartTime.getTime() + faker.number.int({ min: 1, max: 3 }) * 60 * 60 * 1000);
-                    if (detailEndTime > event.end_time) detailEndTime = event.end_time;
-                }
-                if (detailStartTime >= detailEndTime && detailStartTime < event.end_time) {
-                    detailStartTime = new Date(event.start_time.getTime() + i * 60 * 60 * 1000);
-                    detailEndTime = new Date(detailStartTime.getTime() + faker.number.int({ min: 1, max: 3 }) * 60 * 60 * 1000);
-                    if (detailEndTime > event.end_time) detailEndTime = event.end_time;
-                    if (detailStartTime >= detailEndTime) detailStartTime = new Date(event.end_time.getTime() - 60 * 60 * 1000);
-                }
-                if (detailStartTime >= detailEndTime) {
-                    console.warn(`Could not generate valid time for event detail for event ${event._id}. Skipping this detail.`);
-                    continue;
                 }
                 eventDetailsData.push({
                     event_id: event._id,
@@ -170,13 +142,8 @@ const seedDatabase = async () => {
                 });
             }
         }
-        let createdEventDetails = [];
-        if (eventDetailsData.length > 0) {
-            createdEventDetails = await EventDetail.insertMany(eventDetailsData);
-            console.log(`${createdEventDetails.length} event details seeded.`);
-        } else {
-            console.log("No event details seeded.");
-        }
+        const createdEventDetails = await EventDetail.insertMany(eventDetailsData);
+        console.log(`${createdEventDetails.length} event details seeded.`);
 
         // --- 5. Seed Event Packages ---
         console.log("Seeding event packages...");
@@ -192,18 +159,12 @@ const seedDatabase = async () => {
                 });
             }
         }
-        let createdEventPackages = [];
-        if (eventPackagesData.length > 0) {
-            createdEventPackages = await EventPackage.insertMany(eventPackagesData);
-            console.log(`${createdEventPackages.length} event packages seeded.`);
-        } else {
-            console.log("No event packages seeded.");
-        }
+        const createdEventPackages = await EventPackage.insertMany(eventPackagesData);
+        console.log(`${createdEventPackages.length} event packages seeded.`);
 
-        // --- 6. Seed Registrations & Payments (Integrated) ---
+        // --- 6. Seed Registrations & Payments ---
         console.log("Seeding registrations and payments...");
         const availableUsersForReg = memberUsers.length > 0 ? memberUsers : createdUsers.filter(u => u.role !== 'admin' && u.role !== 'organizer' && u.role !== 'finance');
-        const allEventDetails = createdEventDetails;
         const createdRegistrations = [];
         const createdPayments = [];
 
@@ -214,8 +175,8 @@ const seedDatabase = async () => {
             let packageId = null;
             let itemPrice = mongoose.Types.Decimal128.fromString("0.00");
 
-            if (faker.datatype.boolean(0.7) && allEventDetails.length > 0) {
-                const detailsForThisEvent = allEventDetails.filter(ed => ed.event_id.equals(event._id));
+            if (faker.datatype.boolean(0.7) && createdEventDetails.length > 0) {
+                const detailsForThisEvent = createdEventDetails.filter(ed => ed.event_id.equals(event._id));
                 if (detailsForThisEvent.length > 0) {
                     const selectedDetail = faker.helpers.arrayElement(detailsForThisEvent);
                     detailId = selectedDetail._id;
@@ -230,8 +191,8 @@ const seedDatabase = async () => {
                 }
             }
 
-            if (!detailId && !packageId) { // Fallback jika tidak terpilih
-                const detailsForThisEvent = allEventDetails.filter(ed => ed.event_id.equals(event._id));
+            if (!detailId && !packageId) {
+                const detailsForThisEvent = createdEventDetails.filter(ed => ed.event_id.equals(event._id));
                 const packagesForThisEvent = createdEventPackages.filter(ep => ep.event_id.equals(event._id));
                 if (detailsForThisEvent.length > 0) {
                     const selectedDetail = faker.helpers.arrayElement(detailsForThisEvent);
@@ -254,29 +215,25 @@ const seedDatabase = async () => {
                     confirmedAt = faker.date.recent({ days: 10 });
                 }
 
-                // Step 1: Create Registration first (without saving to get _id)
-                const registration = new Registration({
-                    user_id: user._id,
-                    event_id: event._id,
-                    detail_id: detailId,
-                    package_id: packageId,
-                    // payment_id will be set after payment is created
-                });
-
-                // Step 2: Create Payment with the registration _id
                 const payment = new Payment({
                     proof_url: faker.image.urlLoremFlickr({ category: 'abstract' }),
                     amount: itemPrice,
                     status: paymentStatus,
                     confirmed_by: confirmedBy,
                     confirmed_at: confirmedAt,
-                    user_id: user._id,
+                    user_id: user._id, // Added user_id
+                    created_at: faker.date.recent({ days: 30 }),
                 });
 
-                // Step 3: Set payment_id in registration
-                registration.payment_id = payment._id;
+                const registration = new Registration({
+                    user_id: user._id,
+                    event_id: event._id,
+                    detail_id: detailId,
+                    package_id: packageId,
+                    payment_id: payment._id,
+                    registration_date: faker.date.recent({ days: 30 }),
+                });
 
-                // Step 4: Save both documents
                 const savedPayment = await payment.save();
                 const savedRegistration = await registration.save();
 
@@ -284,46 +241,50 @@ const seedDatabase = async () => {
                 createdRegistrations.push(savedRegistration);
             }
         }
-
         console.log(`${createdRegistrations.length} registrations seeded.`);
         console.log(`${createdPayments.length} payments seeded.`);
 
-        // --- 8. Seed Attendances ---
+        // --- 7. Seed Attendances ---
         console.log("Seeding attendances...");
         const attendancesData = [];
         for (const reg of createdRegistrations) {
             const paymentForReg = createdPayments.find(p => p._id.equals(reg.payment_id));
             if (paymentForReg && paymentForReg.status === 'confirmed' && reg.detail_id) {
-                const eventDetail = allEventDetails.find(ed => ed._id.equals(reg.detail_id));
+                const eventDetail = createdEventDetails.find(ed => ed._id.equals(reg.detail_id));
                 if (eventDetail && faker.datatype.boolean(0.85)) {
-                    let scanTime = faker.date.between({ from: eventDetail.start_time, to: eventDetail.end_time });
-                    if (scanTime < eventDetail.start_time || scanTime > eventDetail.end_time) {
-                        scanTime = eventDetail.start_time;
+                    let scannedAt = faker.date.between({ from: eventDetail.start_time, to: eventDetail.end_time });
+                    if (scannedAt < eventDetail.start_time || scannedAt > eventDetail.end_time) {
+                        scannedAt = eventDetail.start_time;
                     }
                     attendancesData.push({
                         registration_id: reg._id,
                         detail_id: reg.detail_id,
                         qr_code: faker.string.uuid(),
                         scanned_by: defaultScannerOrUploader._id,
-                        scanned_at: scanTime,
+                        scanned_at: scannedAt,
                     });
                 }
             }
         }
+        const createdAttendances = await Attendance.insertMany(attendancesData);
+        console.log(`${createdAttendances.length} attendances seeded.`);
 
-        // --- 9. Seed Certificates ---
-        // console.log("Seeding certificates...");
-        // const certificatesData = [];
-        // for (const att of createdAttendances) {
-        //     certificatesData.push({
-        //         registration_id: att.registration_id,
-        //         detail_id: att.detail_id,
-        //         certificate_url: faker.internet.url() + `/certificates/${att.registration_id}-${att.detail_id}.pdf`,
-        //         uploaded_by: defaultScannerOrUploader._id,
-        //     });
-        // }
+        // --- 8. Seed Certificates ---
+        console.log("Seeding certificates...");
+        const certificatesData = [];
+        for (const att of createdAttendances) {
+            certificatesData.push({
+                registration_id: att.registration_id,
+                detail_id: att.detail_id,
+                certificate_url: faker.internet.url() + `/certificates/${att.registration_id}-${att.detail_id}.pdf`,
+                uploaded_by: defaultScannerOrUploader._id,
+                uploaded_at: faker.date.recent({ days: 7 }),
+            });
+        }
+        const createdCertificates = await Certificate.insertMany(certificatesData);
+        console.log(`${createdCertificates.length} certificates seeded.`);
 
-        // --- 10. Seed Carts ---
+        // --- 9. Seed Carts ---
         console.log("Seeding carts...");
         const cartsData = [];
         const usersForCart = memberUsers.length > 0 ? memberUsers.slice(0, 10) : createdUsers.filter(u => u.role === 'member').slice(0, 10);
@@ -332,8 +293,8 @@ const seedDatabase = async () => {
                 const event = faker.helpers.arrayElement(createdEvents);
                 let detailId = null;
                 let packageId = null;
-                if (faker.datatype.boolean() && allEventDetails.length > 0) {
-                    const detailsForThisEvent = allEventDetails.filter(ed => ed.event_id.equals(event._id));
+                if (faker.datatype.boolean() && createdEventDetails.length > 0) {
+                    const detailsForThisEvent = createdEventDetails.filter(ed => ed.event_id.equals(event._id));
                     if (detailsForThisEvent.length > 0) {
                         detailId = faker.helpers.arrayElement(detailsForThisEvent)._id;
                     }
@@ -349,16 +310,13 @@ const seedDatabase = async () => {
                         event_id: event._id,
                         detail_id: detailId,
                         package_id: packageId,
+                        added_at: faker.date.recent({ days: 14 }),
                     });
                 }
             }
         }
-        if (cartsData.length > 0) {
-            await Cart.insertMany(cartsData);
-            console.log(`${cartsData.length} carts seeded.`);
-        } else {
-            console.log("No carts seeded.");
-        }
+        const createdCarts = await Cart.insertMany(cartsData);
+        console.log(`${createdCarts.length} carts seeded.`);
 
         console.log("Database seeding completed successfully!");
 

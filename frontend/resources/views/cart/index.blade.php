@@ -1,7 +1,7 @@
 @extends('components.layout')
 
 @section('title')
-    Keranjang Belanja Anda
+    Cart
 @endsection
 
 @push('style')

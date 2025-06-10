@@ -66,6 +66,14 @@
                                     </a>
                                 </li>
                             @endif
+                            @if (session('role') === 'finance')
+                                <li>
+                                    <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                        href="{{ route('finance.index') }}">
+                                        <i class="fas fa-money-check-alt mr-2"></i>Finance Dashboard
+                                    </a>
+                                </li>
+                            @endif
                             <li>
                                 <hr class="border-gray-200 my-1">
                             </li>
@@ -74,7 +82,7 @@
                                     @csrf
                                     <button type="submit"
                                         class="cursor-pointer block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"><i
-                                            class="fas fa-sign-out-alt mr-2"></i>Logout</button>
+                                            class="fas fa-sign-out-alt mr-2"></i>Log out</button>
                                 </form>
                             </li>
                         </ul>
@@ -94,7 +102,6 @@
     </div>
 
     <div class="md:hidden absolute top-16 left-0 w-full bg-white shadow-lg hidden" id="mobileMenu">
-        {{-- Sesuaikan top-16 jika tinggi navbar berbeda --}}
         <ul class="flex flex-col items-start p-4">
             <li class="w-full">
                 <a class="block px-4 py-3 text-lg {{ request()->is('/') ? 'text-red-600 font-bold' : 'text-gray-600 hover:text-red-600' }} transition"
@@ -136,7 +143,6 @@
                         @if (session('role') === 'member')
                             <li>
                                 <a class="block px-4 py-3 text-gray-700 hover:bg-gray-100" href="/member">
-                                    {{-- Ganti dengan route('member.dashboard') jika ada --}}
                                     <i class="fas fa-ticket-alt mr-2"></i>My Tickets
                                 </a>
                             </li>
@@ -154,6 +160,14 @@
                                 <a class="block px-4 py-3 text-gray-700 hover:bg-gray-100"
                                     href="{{ route('organizer.index') }}">
                                     <i class="fa-solid fa-table-columns mr-2"></i>Organizer Dashboard
+                                </a>
+                            </li>
+                        @endif
+                        @if (session('role') === 'finance')
+                            <li>
+                                <a class="block px-4 py-3 text-gray-700 hover:bg-gray-100"
+                                    href="{{ route('finance.index') }}">
+                                    <i class="fas fa-money-check-alt mr-2"></i>Finance Dashboard
                                 </a>
                             </li>
                         @endif

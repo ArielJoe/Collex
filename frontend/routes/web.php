@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\OrganizerController;
@@ -58,6 +59,12 @@ Route::middleware('role')->prefix('organizer')->name('organizer.')->group(functi
     Route::get('/events/{event}/edit', [OrganizerController::class, 'editEvent'])->name('events.edit');
     Route::put('/events/{event}', [OrganizerController::class, 'updateEvent'])->name('events.update');
     Route::delete('/events/{event}', [OrganizerController::class, 'destroyEvent'])->name('events.destroy');
+});
+
+Route::middleware('role')->prefix('finance')->name('finance.')->group(function () {
+    Route::get('/', [FinanceController::class, 'index'])->name('index');
+    Route::patch('/approve/{id}', [FinanceController::class, 'approvePayment'])->name('approve-payment');
+    Route::patch('/reject/{id}', [FinanceController::class, 'rejectPayment'])->name('reject-payment');
 });
 
 Route::middleware('role')->prefix('member')->name('member.')->group(function () {
