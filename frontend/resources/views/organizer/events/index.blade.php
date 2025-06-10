@@ -123,7 +123,8 @@
                                             <div class="flex-shrink-0 h-12 w-12 rounded-lg overflow-hidden">
                                                 @if (!empty($event['poster_url']))
                                                     <img class="h-full w-full object-cover"
-                                                        src="{{ url($event['poster_url']) }}" alt="Event poster">
+                                                        src="{{ str_contains($event['poster_url'] ?? '', 'https') ? $event['poster_url'] : url($event['poster_url'] ?? '') }}"
+                                                        alt="Event poster">
                                                 @else
                                                     <div
                                                         class="h-full w-full bg-gray-100 flex items-center justify-center text-gray-400">

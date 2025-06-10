@@ -18,6 +18,8 @@ Route::get('/401', function () {
     return view('401');
 });
 
+Route::get('/images/{filename}', [StorageController::class, 'index'])->name('image.show');
+
 Route::get('/login', [AuthController::class, 'login_'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 

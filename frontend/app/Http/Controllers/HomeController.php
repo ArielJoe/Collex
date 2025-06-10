@@ -4,37 +4,38 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log; // Tambahkan Log facade
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
-    // Pastikan ini adalah base URL yang benar untuk endpoint events Anda
     protected $apiBaseUrl = 'http://localhost:5000/api/event';
 
     public function index(Request $request)
     {
         $location = $request->query('location');
-        $search = $request->query('search'); // Ambil parameter 'search'
+        $keyword = $request->query('keyword');
         $page = $request->query('page', 1);
-        $facultyFilter = $request->query('faculty'); // Untuk pagination link
-        $dateFilter = $request->query('date'); // Untuk pagination link
+        $faculty = $request->query('faculty'); // Changed from $facultyFilter to $faculty to match the template
+        $date = $request->query('date');
 
         try {
             $queryParams = [
                 'page' => $page,
-                'limit' => 10 // Anda bisa membuat limit ini dinamis jika perlu
+                'limit' => 10
             ];
 
             if ($location) {
-                $queryParams['location'] = $location; // API Node.js Anda perlu mendukung filter ini
+                $queryParams['location'] = $location;
             }
-            if ($search) {
-                $queryParams['search'] = $search; // API Node.js Anda mendukung filter 'search' untuk nama event
+            if ($keyword) {
+                $queryParams['search'] = $keyword;
             }
-            // Jika Anda ingin filter berdasarkan faculty_id dari sidebar, Anda perlu menambahkan:
-            // if ($facultyFilter) {
-            //     $queryParams['faculty_id'] = $facultyFilter;
-            // }
+            if ($faculty) {
+                $queryParams['faculty_id'] = $faculty; // Map to faculty_id as expected by the API
+            }
+            if ($date) {
+                $queryParams['date'] = $date; // Add date filter if the API supports it
+            }
 
             $response = Http::get($this->apiBaseUrl, $queryParams);
 
@@ -45,15 +46,14 @@ class HomeController extends Controller
                     'totalPages' => 1,
                     'currentPage' => 1,
                     'locationFilter' => $location,
-                    'searchFilter' => $search, // Teruskan filter pencarian ke view
-                    'facultyFilter' => $facultyFilter,
-                    'dateFilter' => $dateFilter
+                    'keyword' => $keyword,
+                    'faculty' => $faculty, // Changed from facultyFilter to faculty
+                    'date' => $date,
                 ]);
             }
 
             $data = $response->json();
 
-            // Pastikan $data adalah array dan memiliki key yang diharapkan
             if (!is_array($data) || !isset($data['data'])) {
                 Log::error('API response format error. Expected "data" key. Response: ', $data);
                 return view('index', [
@@ -61,20 +61,20 @@ class HomeController extends Controller
                     'totalPages' => 1,
                     'currentPage' => 1,
                     'locationFilter' => $location,
-                    'searchFilter' => $search,
-                    'facultyFilter' => $facultyFilter,
-                    'dateFilter' => $dateFilter
+                    'keyword' => $keyword,
+                    'faculty' => $faculty, // Changed from facultyFilter to faculty
+                    'date' => $date,
                 ]);
             }
 
             return view('index', [
-                'events' => $data['data'] ?? [], // Mengakses events dari $data['data']
+                'events' => $data['data'] ?? [],
                 'totalPages' => $data['totalPages'] ?? 1,
                 'currentPage' => $data['currentPage'] ?? 1,
                 'locationFilter' => $location,
-                'searchFilter' => $search, // Teruskan filter pencarian ke view untuk pagination dan form
-                'facultyFilter' => $facultyFilter,
-                'dateFilter' => $dateFilter
+                'keyword' => $keyword,
+                'faculty' => $faculty, // Changed from facultyFilter to faculty
+                'date' => $date,
             ]);
         } catch (\Exception $e) {
             Log::error('API request exception: ' . $e->getMessage() . ' - Trace: ' . $e->getTraceAsString());
@@ -83,9 +83,9 @@ class HomeController extends Controller
                 'totalPages' => 1,
                 'currentPage' => 1,
                 'locationFilter' => $location,
-                'searchFilter' => $search,
-                'facultyFilter' => $facultyFilter,
-                'dateFilter' => $dateFilter
+                'keyword' => $keyword,
+                'faculty' => $faculty, // Changed from facultyFilter to faculty
+                'date' => $date,
             ]);
         }
     }

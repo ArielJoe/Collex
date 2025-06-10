@@ -117,17 +117,19 @@ router.post('/', async (req, res) => {
             name,
             location,
             poster_url,
-            max_participants,
+            max_participant,
+            start_time,
+            end_time,
             organizer, // ID User
             faculty,   // ID Faculty
             registration_deadline
         } = req.body;
 
         // Validasi input dasar
-        if (!name || !location || !max_participants || !organizer || !faculty || !registration_deadline) {
+        if (!name || !location || !max_participant || !organizer || !faculty || !registration_deadline) {
             return res.status(400).json({
                 success: false,
-                message: 'Missing required fields: name, location, max_participants, organizer, faculty, registration_deadline'
+                message: 'Missing required fields: name, location, max_participant, organizer, faculty, registration_deadline'
             });
         }
 
@@ -156,9 +158,11 @@ router.post('/', async (req, res) => {
             name,
             location,
             poster_url: poster_url || null,
-            max_participants: parseInt(max_participants),
+            max_participant: parseInt(max_participant),
             organizer, // Simpan ID
             faculty,   // Simpan ID
+            start_time,
+            end_time,
             registration_deadline: new Date(registration_deadline),
             // created_at akan default dari schema
         });
@@ -180,6 +184,50 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
         res.status(500).json({ success: false, message: 'Server error while creating event' });
+    }
+});
+
+router.post('/details', async (req, res) => {
+    try {
+        const { event_id, title, start_time, end_time, location, speaker, description, price } = req.body;
+
+        // Validate input
+        if (!event_id || !mongoose.Types.ObjectId.isValid(event_id)) {
+            return res.status(400).json({ success: false, message: 'Invalid event ID' });
+        }
+        if (!title || !start_time || !end_time || !location || !speaker || !description) {
+            return res.status(400).json({ success: false, message: 'All fields except price are required' });
+        }
+
+        const eventExists = await Event.findById(event_id);
+        if (!eventExists) {
+            return res.status(404).json({ success: false, message: 'Event not found' });
+        }
+
+        const newDetail = new EventDetail({
+            event_id,
+            title,
+            start_time: new Date(start_time),
+            end_time: new Date(end_time),
+            location,
+            speaker,
+            description,
+            price: price ? mongoose.Types.Decimal128.fromString(price.toString()) : null,
+        });
+
+        const savedDetail = await newDetail.save();
+
+        res.status(201).json({
+            success: true,
+            message: 'Event detail created successfully',
+            data: savedDetail
+        });
+    } catch (error) {
+        console.error('Error creating event detail:', error);
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+        res.status(500).json({ success: false, message: 'Server error while creating event detail' });
     }
 });
 
@@ -212,8 +260,9 @@ router.put('/:id', async (req, res) => {
                 message: 'Registration deadline must be a future date'
             });
         }
-        if (updateData.max_participants) {
-            updateData.max_participants = parseInt(updateData.max_participants);
+        if (updateData.max_participant) {
+            updateData.max_participant
+                = parseInt(updateData.max_participant);
         }
 
 

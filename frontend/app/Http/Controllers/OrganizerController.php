@@ -97,46 +97,104 @@ class OrganizerController extends Controller
 
     public function storeEvent(Request $request)
     {
-        // Validasi disesuaikan dengan skema Event Node.js yang baru
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
-            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Untuk file upload
-            'max_participants' => 'required|integer|min:1', // Sesuai skema: max_participant
-            'faculty' => 'required|string', // ID fakultas (string ObjectId)
+            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'max_participant' => 'required|integer|min:1',
+            'faculty' => 'required|string|in:FK,FKG,FP,FTRC,FHIK,FHBD',
             'registration_deadline' => 'required|date_format:Y-m-d\TH:i|after_or_equal:now',
-            'start_time' => 'required|date_format:Y-m-d\TH:i|after:registration_deadline',
-            'end_time' => 'required|date_format:Y-m-d\TH:i|after:start_time',
-            'description' => 'nullable|string', // Jika ada di skema Event Node.js
+            'start_time' => 'required|date_format:Y-m-d\TH:i|after:registration_deadline', // Ensure required
+            'end_time' => 'required|date_format:Y-m-d\TH:i|after:start_time',             // Ensure required
+            'description' => 'nullable|string',
+            'details.*.title' => 'required|string|max:255',
+            'details.*.start_time' => 'required|date_format:Y-m-d\TH:i',
+            'details.*.end_time' => 'required|date_format:Y-m-d\TH:i|after:details.*.start_time',
+            'details.*.location' => 'required|string|max:255',
+            'details.*.speaker' => 'required|string|max:255',
+            'details.*.description' => 'required|string',
+            'details.*.price' => 'required|numeric',
         ]);
 
-        $payload = $validatedData;
-        $payload['organizer'] = session()->get('userId'); // Field di API adalah 'organizer'
+        // Fetch faculty ObjectId based on the code
+        $facultyResponse = Http::get(rtrim(env('API_BASE_URL', 'http://localhost:5000'), '/') . '/api/faculty/code/' . $validatedData['faculty']);
+        $facultyData = $facultyResponse->json();
 
-        if ($request->hasFile('poster')) {
-            $path = $request->file('poster')->store('public/event_posters');
-            $payload['poster_url'] = Storage::url($path);
-        } else {
-            $payload['poster_url'] = $request->input('existing_poster_url'); // Jika ada field untuk URL poster yang sudah ada
+        Log::info('Faculty lookup response: ', ['url' => $facultyResponse->effectiveUri(), 'status' => $facultyResponse->status(), 'body' => $facultyData]);
+
+        if ($facultyResponse->failed() || !isset($facultyData['success']) || !$facultyData['success']) {
+            return back()->withInput()->with('error', 'Invalid faculty code or server error. Details: ' . ($facultyData['message'] ?? 'No message'));
         }
 
-        unset($payload['poster']); // Hapus file input dari payload
+        $facultyId = $facultyData['data']['_id'];
+
+        $payload = array_merge($validatedData, [
+            'organizer' => session()->get('userId'),
+            'faculty' => $facultyId,
+        ]);
+
+        // Handle file upload
+        if ($request->hasFile('poster')) {
+            // Define the destination path in the public directory
+            $destinationPath = public_path('event_posters');
+            $fileName = time() . '_' . $request->file('poster')->getClientOriginalName(); // Unique filename
+            $request->file('poster')->move($destinationPath, $fileName);
+
+            // Generate the public URL
+            $payload['poster_url'] = asset('event_posters/' . $fileName);
+        } else {
+            // Default image if none provided
+            $payload['poster_url'] = 'https://assets.grok.com/users/678dc0c1-1c78-46f4-9fee-e3b4f5e52f0b/5O2ZUDnnMKbqF0wD-profile-picture.webp';
+        }
+
+        // Remove the poster field from payload as we don't store it in DB
+        unset($payload['poster']);
+        unset($payload['details']);
+
+        Log::info('Payload sent to API: ', $payload); // Debug payload
 
         try {
-            $response = Http::post($this->apiBaseUrl, $payload); // POST ke /api/events
-            $responseData = $response->json();
+            $eventResponse = Http::post($this->apiBaseUrl, $payload);
+            $eventResponseData = $eventResponse->json();
 
-            if ($response->successful() && isset($responseData['success']) && $responseData['success'] === true) {
-                return redirect()->route('organizer.events.index')->with('success', $responseData['message'] ?? 'Event berhasil dibuat.');
+            if ($eventResponse->failed()) {
+                Log::error('Event creation failed: ' . $eventResponse->body());
+                return back()->withInput()->with('error', $eventResponseData['message'] ?? 'Gagal membuat event utama. Status: ' . $eventResponse->status());
             }
 
-            Log::error('Organizer Store Event - API request failed: ' . $response->body());
-            return back()->withInput()->with('error', $responseData['message'] ?? 'Gagal membuat event. Periksa kembali data Anda.');
+            if (!isset($eventResponseData['success']) || !$eventResponseData['success']) {
+                Log::error('Event creation success false: ' . $eventResponse->body());
+                return back()->withInput()->with('error', $eventResponseData['message'] ?? 'Gagal membuat event utama.');
+            }
+
+            $eventId = $eventResponseData['data']['_id'];
+
+            $detailsPayload = $request->input('details', []);
+            foreach ($detailsPayload as $detail) {
+                $detailResponse = Http::post(rtrim(env('API_BASE_URL', 'http://localhost:5000'), '/') . '/api/event/details', [
+                    'event_id' => $eventId,
+                    'title' => $detail['title'],
+                    'start_time' => $detail['start_time'],
+                    'end_time' => $detail['end_time'],
+                    'location' => $detail['location'],
+                    'speaker' => $detail['speaker'],
+                    'description' => $detail['description'],
+                    'price' => $detail['price'],
+                ]);
+
+                $detailResponseData = $detailResponse->json();
+                if ($detailResponse->failed() || !isset($detailResponseData['success']) || !$detailResponseData['success']) {
+                    Log::error('Detail creation failed: ' . $detailResponse->body());
+                    return back()->withInput()->with('error', $detailResponseData['message'] ?? 'Gagal membuat detail event.');
+                }
+            }
+
+            return redirect()->route('organizer.events.index')->with('success', $eventResponseData['message'] ?? 'Event dan detail berhasil dibuat.');
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('Organizer Store Event - API connection error: ' . $e->getMessage());
+            Log::error('API connection error: ' . $e->getMessage());
             return back()->withInput()->with('error', 'Tidak dapat terhubung ke layanan event.');
         } catch (\Exception $e) {
-            Log::error('Organizer Store Event - Generic error: ' . $e->getMessage());
+            Log::error('Generic error: ' . $e->getMessage());
             return back()->withInput()->with('error', 'Terjadi kesalahan saat membuat event.');
         }
     }

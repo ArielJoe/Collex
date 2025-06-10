@@ -43,8 +43,8 @@
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                             @if ($event['paymentStatus'] === 'confirmed') bg-green-100 text-green-800
-                                            @elseif ($event['paymentStatus'] === 'pending') bg-yellow-100 text-yellow-800
-                                            @else bg-gray-100 text-gray-800 @endif">
+                                            @elseif ($event['paymentStatus'] === 'pending') text-yellow-800
+                                            @else text-gray-800 @endif">
                                             {{ $event['paymentStatus'] }}
                                         </span>
                                     </p>
@@ -86,7 +86,8 @@
                                                 class="flex justify-between items-center p-3 bg-white rounded-md shadow-sm hover:bg-gray-100 transition-colors duration-200">
                                                 <div>
                                                     <p class="text-md font-semibold text-gray-800">{{ $item['name'] }}
-                                                        ({{ $item['type'] }})</p>
+                                                        ({{ $item['type'] }})
+                                                    </p>
                                                 </div>
                                                 <p class="text-md text-gray-600">
                                                     Rp{{ number_format(is_numeric($item['price']) ? $item['price'] : 0, 2) }}
