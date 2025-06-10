@@ -41,10 +41,14 @@
                                     <span class="block text-sm font-medium text-gray-500">Payment Status</span>
                                     <p class="text-lg font-semibold text-gray-900">
                                         <span
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            @if ($event['paymentStatus'] === 'confirmed') bg-green-100 text-green-800
-                                            @elseif ($event['paymentStatus'] === 'pending') text-yellow-800
-                                            @else text-gray-800 @endif">
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                            @class([
+                                                'bg-green-100 text-green-800' => $event['paymentStatus'] === 'confirmed',
+                                                'bg-yellow-100 text-yellow-800' => $event['paymentStatus'] === 'pending',
+                                                'bg-gray-100 text-gray-800' =>
+                                                    $event['paymentStatus'] !== 'confirmed' &&
+                                                    $event['paymentStatus'] !== 'pending',
+                                            ])>
                                             {{ $event['paymentStatus'] }}
                                         </span>
                                     </p>
