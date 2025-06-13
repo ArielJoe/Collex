@@ -22,7 +22,7 @@ router.get('/my-tickets/:userId', async (req, res) => {
             { $match: { user_id: new mongoose.Types.ObjectId(userId) } },
             { $lookup: { from: "payment", localField: "payment_id", foreignField: "_id", as: "paymentInfo" } },
             { $unwind: "$paymentInfo" },
-            { $match: { "paymentInfo.status": { $in: ["confirmed", "pending"] } } },
+            { $match: { "paymentInfo.status": { $in: ["confirmed", "pending", "rejected"] } } },
             { $lookup: { from: "event", localField: "event_id", foreignField: "_id", as: "eventInfo" } },
             { $lookup: { from: "event_detail", localField: "detail_id", foreignField: "_id", as: "detailInfo" } },
             { $lookup: { from: "event_package", localField: "package_id", foreignField: "_id", as: "packageInfo" } },

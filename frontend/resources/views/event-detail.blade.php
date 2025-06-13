@@ -435,6 +435,7 @@
             @endif
         </div>
     </div>
+    @include('components.footer')
 @endsection
 
 @push('script')

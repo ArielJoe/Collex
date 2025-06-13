@@ -142,7 +142,7 @@ class PaymentController extends Controller
         if ($request->hasFile('proof_url_file') && $request->file('proof_url_file')->isValid()) {
             $file = $request->file('proof_url_file');
             $fileName = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $destinationPath = public_path('payment-proofs/cart');
+            $destinationPath = public_path('payment-proofs');
 
             if (!File::isDirectory($destinationPath)) {
                 File::makeDirectory($destinationPath, 0775, true, true);
@@ -150,7 +150,7 @@ class PaymentController extends Controller
 
             try {
                 $file->move($destinationPath, $fileName);
-                $publicPathForFile = 'payment-proofs/cart/' . $fileName;
+                $publicPathForFile = 'payment-proofs/' . $fileName;
                 $fullFileUrl = asset($publicPathForFile);
                 Log::info("File uploaded to public directory: {$publicPathForFile}, URL: {$fullFileUrl}");
             } catch (\Symfony\Component\HttpFoundation\File\Exception\FileException $e) {
@@ -183,8 +183,7 @@ class PaymentController extends Controller
                 $params = [
                     'transaction_details' => [
                         'order_id' => rand(),
-                        // floatval($ci['detail_id']['price']['$numberDecimal'] ?? ($ci['detail_id']['price'] ?? ($ci['package_id']['price']['$numberDecimal'] ?? ($ci['package_id']['price'] ?? 0))))
-                        'gross_amount' =>  100000,
+                        'gross_amount' => floatval($validated['total_amount_checkout']),
                     ],
                     'customer_details' => [
                         'first_name' => "",
@@ -211,14 +210,13 @@ class PaymentController extends Controller
             $payload = [
                 'user_id' => $userId,
                 'total_amount' => floatval($validated['total_amount_checkout']),
-                'proof_url' => $fullFileUrl,
+                'proof_url' => $publicPathForFile, // Store as "payment-proofs/{filename}"
                 'cart_items' => $itemsToCheckout
             ];
 
             $response = Http::post("{$this->apiBaseUrl}/api/payment/process-cart-checkout", $payload);
             $responseData = $response->json();
             if ($response->successful() && isset($responseData['success']) && $responseData['success'] === true) {
-                // Menggunakan route('home') untuk redirect ke halaman utama
                 return redirect()->route('cart.index')->with('success', 'Pembayaran Anda berhasil diproses dan sedang menunggu konfirmasi.');
             } else {
                 Log::error('Process Cart Checkout - API request failed: ' . $response->body());

@@ -286,4 +286,5 @@
             </div>
         @endif
     </div>
+    @include('components.footer')
 @endsection

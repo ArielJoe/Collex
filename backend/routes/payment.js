@@ -278,8 +278,8 @@ router.patch('/update-payment-status/:paymentId', async (req, res) => {
                             registration_id: registration._id,
                             detail_id: registration.detail_id,
                             qr_code: new mongoose.Types.ObjectId().toString(),
-                            scanned_by: payment.confirmed_by,
-                            scanned_at: payment.confirmed_at,
+                            scanned_by: null,
+                            scanned_at: null,
                         });
                         await newAttendance.save();
                         console.log(`Attendance generated for registration ${registration._id} and detail ${registration.detail_id}`);

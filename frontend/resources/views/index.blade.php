@@ -195,34 +195,7 @@
         </div>
     </div>
 
-    <footer class="bg-white mt-auto border-t-1">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div class="text-sm text-gray-600">
-                    © {{ date('Y') }} Tixin. All rights reserved.
-                </div>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <a href="/"
-                        class="text-sm text-gray-600 hover:bg-primary/20 hover:text-red-600 px-3 py-2 rounded-md transition duration-200">
-                        Home
-                    </a>
-                    <a href="#"
-                        class="text-sm text-gray-600 hover:bg-primary/20 hover:text-red-600 px-3 py-2 rounded-md transition duration-200">
-                        Terms
-                    </a>
-                    <a href="#"
-                        class="text-sm text-gray-600 hover:bg-primary/20 hover:text-red-600 px-3 py-2 rounded-md transition duration-200">
-                        Privacy Policy
-                    </a>
-                </div>
-                @if (auth()->check() && session('role'))
-                    <div class="text-sm text-gray-600">
-                        Logged in as <span class="font-semibold capitalize">{{ session('role') }}</span>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </footer>
+    @include('components.footer')
 @endsection
 
 @push('script')

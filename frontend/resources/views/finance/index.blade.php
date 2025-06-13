@@ -114,7 +114,7 @@
                                         @if (($payment['status'] ?? '') === 'pending')
                                             <div class="flex space-x-2">
                                                 <form
-                                                    action="{{ route('finance.approve-payment', $payment['_id'] ?? '') }}"
+                                                    action="{{ route('finance.approve-payment', ['id' => $payment['_id'] ?? '', 'page' => $currentPage]) }}"
                                                     method="POST">
                                                     @csrf
                                                     @method('PATCH')
@@ -129,7 +129,8 @@
                                                         Approve
                                                     </button>
                                                 </form>
-                                                <form action="{{ route('finance.reject-payment', $payment['_id'] ?? '') }}"
+                                                <form
+                                                    action="{{ route('finance.reject-payment', ['id' => $payment['_id'] ?? '', 'page' => $currentPage]) }}"
                                                     method="POST">
                                                     @csrf
                                                     @method('PATCH')
@@ -156,19 +157,65 @@
                 </div>
 
                 @if (isset($totalPages) && $totalPages > 1)
-                    <div class="mt-6 flex justify-center">
-                        <nav class="flex items-center space-x-1">
-                            @for ($i = 1; $i <= $totalPages; $i++)
-                                <a href="{{ route('finance.index') }}?page={{ $i }}"
-                                    class="px-3 py-1 rounded-md text-sm font-medium 
-                                    {{ $i == $currentPage ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+                    <div class="mt-6 flex justify-center items-center">
+                        <nav class="flex items-center space-x-2" aria-label="Pagination">
+                            <a href="{{ route('finance.index', ['page' => max(1, $currentPage - 1)]) }}"
+                                class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 {{ $currentPage == 1 ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                {{ $currentPage == 1 ? 'aria-disabled="true"' : '' }}>
+                                Previous
+                            </a>
+
+                            @php
+                                $start = max(1, $currentPage - 2);
+                                $end = min($totalPages, $currentPage + 2);
+
+                                if ($end - $start < 4) {
+                                    if ($start == 1) {
+                                        $end = min($totalPages, $start + 4);
+                                    } else {
+                                        $start = max(1, $end - 4);
+                                    }
+                                }
+                            @endphp
+
+                            @if ($start > 1)
+                                <a href="{{ route('finance.index', ['page' => 1]) }}"
+                                    class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">
+                                    1
+                                </a>
+                                @if ($start > 2)
+                                    <span class="px-3 py-2 text-sm text-gray-500">...</span>
+                                @endif
+                            @endif
+
+                            @for ($i = $start; $i <= $end; $i++)
+                                <a href="{{ route('finance.index', ['page' => $i]) }}"
+                                    class="px-3 py-2 rounded-md text-sm font-medium {{ $i == $currentPage ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100' }}"
+                                    {{ $i == $currentPage ? 'aria-current="page"' : '' }}>
                                     {{ $i }}
                                 </a>
                             @endfor
+
+                            @if ($end < $totalPages)
+                                @if ($end < $totalPages - 1)
+                                    <span class="px-3 py-2 text-sm text-gray-500">...</span>
+                                @endif
+                                <a href="{{ route('finance.index', ['page' => $totalPages]) }}"
+                                    class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">
+                                    {{ $totalPages }}
+                                </a>
+                            @endif
+
+                            <a href="{{ route('finance.index', ['page' => min($totalPages, $currentPage + 1)]) }}"
+                                class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 {{ $currentPage == $totalPages ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                {{ $currentPage == $totalPages ? 'aria-disabled="true"' : '' }}>
+                                Next
+                            </a>
                         </nav>
                     </div>
                 @endif
             @endif
         </div>
     @endif
+    @include('components.footer')
 @endsection

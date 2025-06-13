@@ -11,7 +11,7 @@
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
                 <div class="mb-4 md:mb-0">
-                    <h1 class="text-3xl font-bold text-gray-900">Event Dashboard</h1>
+                    <h1 class="text-3xl font-bold text-gray-900">Event Organizer Dashboard</h1>
                     <p class="text-lg text-gray-600">Manage your events and track performance</p>
                 </div>
                 <div class="relative">
@@ -292,6 +292,130 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Scan QR Section -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md mt-8">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Scan QR for Attendance</h3>
+                </div>
+                <div class="p-6">
+                    <button id="toggleQrScanner"
+                        class="mb-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 mr-2 h-5 w-5" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L19.5 13" />
+                        </svg>
+                        Start QR Scanner
+                    </button>
+
+                    <div id="qrScannerContainer" class="hidden mt-4">
+                        <div class="relative">
+                            <video id="qrVideo"
+                                class="w-full h-64 rounded-lg border border-gray-200 bg-gray-100"></video>
+                            <div id="qrResult" class="mt-4 p-4 bg-gray-50 rounded-lg text-center text-gray-700">
+                                Scan a QR code to check attendance.
+                            </div>
+                            <div class="mt-4 flex justify-center gap-4">
+                                <button id="confirmAttendance"
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                                    disabled>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 mr-2 h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Confirm Attendance
+                                </button>
+                                <button id="cancelScan"
+                                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const toggleQrScanner = document.getElementById('toggleQrScanner');
+                const qrScannerContainer = document.getElementById('qrScannerContainer');
+                const qrVideo = document.getElementById('qrVideo');
+                const qrResult = document.getElementById('qrResult');
+                const confirmAttendance = document.getElementById('confirmAttendance');
+                const cancelScan = document.getElementById('cancelScan');
+
+                let html5QrcodeScanner = null;
+
+                toggleQrScanner.addEventListener('click', function() {
+                    if (qrScannerContainer.classList.contains('hidden')) {
+                        qrScannerContainer.classList.remove('hidden');
+                        startQrScanner();
+                    } else {
+                        stopQrScanner();
+                        qrScannerContainer.classList.add('hidden');
+                        qrResult.textContent = 'Scan a QR code to check attendance.';
+                        confirmAttendance.disabled = true;
+                    }
+                });
+
+                cancelScan.addEventListener('click', function() {
+                    stopQrScanner();
+                    qrScannerContainer.classList.add('hidden');
+                    qrResult.textContent = 'Scan a QR code to check attendance.';
+                    confirmAttendance.disabled = true;
+                });
+
+                function startQrScanner() {
+                    if (html5QrcodeScanner) {
+                        html5QrcodeScanner.clear();
+                    }
+                    html5QrcodeScanner = new Html5Qrcode("qrVideo");
+                    html5QrcodeScanner.start({
+                            facingMode: "environment"
+                        }, // Use rear camera
+                        {
+                            fps: 10,
+                            qrbox: 250
+                        },
+                        (decodedText, decodedResult) => {
+                            qrResult.textContent = `Scanned: ${decodedText}`;
+                            confirmAttendance.disabled = false;
+                        },
+                        (error) => {
+                            console.warn(error);
+                        }
+                    ).catch(err => {
+                        console.error('Failed to start QR scanner:', err);
+                        qrResult.textContent =
+                            'Error starting scanner. Please ensure camera access is granted.';
+                    });
+                }
+
+                function stopQrScanner() {
+                    if (html5QrcodeScanner) {
+                        html5QrcodeScanner.clear();
+                        html5QrcodeScanner = null;
+                    }
+                }
+
+                confirmAttendance.addEventListener('click', function() {
+                    const scannedData = qrResult.textContent.replace('Scanned: ', '');
+                    // TODO: Implement API call to confirm attendance (e.g., PATCH /api/attendance/:id/scan)
+                    console.log('Confirming attendance for:', scannedData);
+                    qrResult.textContent = `Attendance confirmed for ${scannedData}`;
+                    confirmAttendance.disabled = true;
+                    // Optionally, stop the scanner or refresh the page
+                    // stopQrScanner();
+                });
+            });
+        </script>
+    @endpush
+
+    @include('components.footer')
 @endsection

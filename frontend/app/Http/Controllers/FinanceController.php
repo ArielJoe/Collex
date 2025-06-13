@@ -8,11 +8,14 @@ use Illuminate\Support\Facades\Auth;
 
 class FinanceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $page = $request->query('page', 1);
+        $limit = 10;
+
         $response = Http::get('http://127.0.0.1:5000/api/payment/all', [
-            'page' => 1,
-            'limit' => 10,
+            'page' => $page,
+            'limit' => $limit,
         ]);
 
         if ($response->failed()) {
@@ -21,7 +24,7 @@ class FinanceController extends Controller
 
         $payments = $response->json()['data'] ?? [];
         $totalPages = $response->json()['totalPages'] ?? 1;
-        $currentPage = $response->json()['currentPage'] ?? 1;
+        $currentPage = $response->json()['currentPage'] ?? $page;
 
         return view('finance.index', compact('payments', 'totalPages', 'currentPage'));
     }
@@ -36,10 +39,12 @@ class FinanceController extends Controller
         ]);
 
         if ($response->successful()) {
-            return redirect()->route('finance.index')->with('success', 'Payment approved successfully.');
+            return redirect()->route('finance.index', ['page' => $request->query('page', 1)])
+                ->with('success', 'Payment approved successfully.');
         }
 
-        return redirect()->route('finance.index')->with('error', 'Failed to approve payment: ' . ($response->json()['message'] ?? 'Unknown error'));
+        return redirect()->route('finance.index', ['page' => $request->query('page', 1)])
+            ->with('error', 'Failed to approve payment: ' . ($response->json()['message'] ?? 'Unknown error'));
     }
 
     public function rejectPayment(Request $request, $id)
@@ -48,13 +53,15 @@ class FinanceController extends Controller
             'Accept' => 'application/json',
         ])->patch("http://127.0.0.1:5000/api/payment/update-payment-status/{$id}", [
             'status' => 'rejected',
-            'confirmed_by_user_id' => session()->get('userId'),
+            'confirmed_by' => session()->get('userId'),
         ]);
 
         if ($response->successful()) {
-            return redirect()->route('finance.index')->with('success', 'Payment rejected successfully.');
+            return redirect()->route('finance.index', ['page' => $request->query('page', 1)])
+                ->with('success', 'Payment rejected successfully.');
         }
 
-        return redirect()->route('finance.index')->with('error', 'Failed to reject payment: ' . ($response->json()['message'] ?? 'Unknown error'));
+        return redirect()->route('finance.index', ['page' => $request->query('page', 1)])
+            ->with('error', 'Failed to reject payment: ' . ($response->json()['message'] ?? 'Unknown error'));
     }
 }
