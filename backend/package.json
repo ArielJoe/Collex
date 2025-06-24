@@ -20,6 +20,7 @@
     "express": "^5.1.0",
     "faker": "^6.6.6",
     "mongoose": "^8.14.2",
+    "qrcode": "^1.5.4",
     "react-helmet": "^6.1.0",
     "react-router-dom": "^7.6.0"
   },

@@ -9,6 +9,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\OrganizerController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\QRScannerController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\StorageController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,8 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.su
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/event/{id}', [EventController::class, 'show'])->name('event.show');
+
+Route::post('/qr-scan', [QRScannerController::class, 'handle']);
 
 Route::prefix('/')->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');

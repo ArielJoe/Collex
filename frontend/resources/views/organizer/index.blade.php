@@ -15,7 +15,7 @@
                     <p class="text-lg text-gray-600">Manage your events and track performance</p>
                 </div>
                 <div class="relative">
-                    <button
+                    <button id="quick-actions-button"
                         class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <span>Quick Actions</span>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20"
@@ -25,15 +25,20 @@
                                 clip-rule="evenodd" />
                         </svg>
                     </button>
-                    <div
+                    <div id="quick-actions-dropdown"
                         class="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10 hidden">
                         <div class="py-1">
                             <a href="{{ route('organizer.events.create') }}"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Create Event</a>
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-plus mr-2 text-blue-500"></i>Create Event
+                            </a>
                             <a href="{{ route('organizer.events.index') }}"
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">View All Events</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">View
-                                Reports</a>
+                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-calendar-alt mr-2 text-green-500"></i>View All Events
+                            </a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-chart-bar mr-2 text-purple-500"></i>View Reports
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -50,20 +55,13 @@
                                 <h3 class="mt-2 text-3xl font-semibold text-gray-900">24</h3>
                             </div>
                             <div class="p-3 rounded-lg bg-blue-50">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
+                                <i class="fas fa-calendar text-blue-500 text-2xl"></i>
                             </div>
                         </div>
                         <a href="{{ route('organizer.events.index') }}"
-                            class="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500">
+                            class="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
                             View all events
-                            <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
+                            <i class="fas fa-chevron-right ml-1 text-sm"></i>
                         </a>
                     </div>
                 </div>
@@ -77,20 +75,13 @@
                                 <h3 class="mt-2 text-3xl font-semibold text-gray-900">5</h3>
                             </div>
                             <div class="p-3 rounded-lg bg-yellow-50">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-500" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="fas fa-clock text-yellow-500 text-2xl"></i>
                             </div>
                         </div>
                         <a href="#"
-                            class="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500">
+                            class="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
                             View upcoming
-                            <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
+                            <i class="fas fa-chevron-right ml-1 text-sm"></i>
                         </a>
                     </div>
                 </div>
@@ -104,20 +95,13 @@
                                 <h3 class="mt-2 text-3xl font-semibold text-gray-900">1,245</h3>
                             </div>
                             <div class="p-3 rounded-lg bg-green-50">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
+                                <i class="fas fa-users text-green-500 text-2xl"></i>
                             </div>
                         </div>
                         <a href="#"
-                            class="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500">
+                            class="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
                             View analytics
-                            <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
+                            <i class="fas fa-chevron-right ml-1 text-sm"></i>
                         </a>
                     </div>
                 </div>
@@ -131,20 +115,13 @@
                                 <h3 class="mt-2 text-3xl font-semibold text-gray-900">$12,450</h3>
                             </div>
                             <div class="p-3 rounded-lg bg-cyan-50">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-cyan-500" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="fas fa-dollar-sign text-cyan-500 text-2xl"></i>
                             </div>
                         </div>
                         <a href="#"
-                            class="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500">
+                            class="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
                             View reports
-                            <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-4 w-4" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
+                            <i class="fas fa-chevron-right ml-1 text-sm"></i>
                         </a>
                     </div>
                 </div>
@@ -157,23 +134,15 @@
                     <div class="p-6">
                         <div class="flex items-center mb-6">
                             <div class="p-3 rounded-lg bg-blue-50 mr-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
+                                <i class="fas fa-plus text-blue-500 text-2xl"></i>
                             </div>
                             <h3 class="text-xl font-semibold text-gray-900">Create New Event</h3>
                         </div>
                         <p class="text-gray-600 mb-6">Set up a new event, configure tickets, and start promoting to your
                             audience.</p>
                         <a href="{{ route('organizer.events.create') }}"
-                            class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 mr-2 h-5 w-5" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
+                            class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                            <i class="fas fa-plus mr-2"></i>
                             Create Event
                         </a>
                     </div>
@@ -184,23 +153,15 @@
                     <div class="p-6">
                         <div class="flex items-center mb-6">
                             <div class="p-3 rounded-lg bg-green-50 mr-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
+                                <i class="fas fa-tasks text-green-500 text-2xl"></i>
                             </div>
                             <h3 class="text-xl font-semibold text-gray-900">Manage Events</h3>
                         </div>
                         <p class="text-gray-600 mb-6">View, edit, and manage all your current and past events in one place.
                         </p>
                         <a href="{{ route('organizer.events.index') }}"
-                            class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 mr-2 h-5 w-5" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                            </svg>
+                            class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+                            <i class="fas fa-calendar-alt mr-2"></i>
                             View All Events
                         </a>
                     </div>
@@ -213,209 +174,397 @@
                     <h3 class="text-lg font-medium text-gray-900">Recent Events</h3>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Event Name</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Location</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Attendees</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status</th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="font-medium text-gray-900">Tech Conference 2023</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">Nov 15, 2023</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">San Francisco, CA</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">450</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button class="text-blue-600 hover:text-blue-900 mr-3">Manage</button>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="font-medium text-gray-900">Music Festival</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">Dec 5, 2023</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">New York, NY</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">1,200</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button class="text-blue-600 hover:text-blue-900 mr-3">Manage</button>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="font-medium text-gray-900">Business Workshop</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">Oct 20, 2023</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">Chicago, IL</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">85</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Completed</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button class="text-blue-600 hover:text-blue-900 mr-3">View</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Event Name</th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Date</th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Location</th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Attendees</th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status</th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-medium text-gray-900">Tech Conference 2023</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">Nov 15, 2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">San Francisco, CA</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">450</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span
+                                            class="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-green-100 text-green-800">Active</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex space-x-2 justify-end">
+                                            <a href="#"
+                                                class="text-blue-600 hover:text-blue-900 px-2 py-1 rounded hover:bg-blue-50 transition-colors duration-200">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="#"
+                                                class="text-green-600 hover:text-green-900 px-2 py-1 rounded hover:bg-green-50 transition-colors duration-200">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="#"
+                                                class="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50 transition-colors duration-200">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-medium text-gray-900">Music Festival</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">Dec 5, 2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">New York, NY</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">1,200</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span
+                                            class="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-green-100 text-green-800">Active</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex space-x-2 justify-end">
+                                            <a href="#"
+                                                class="text-blue-600 hover:text-blue-900 px-2 py-1 rounded hover:bg-blue-50 transition-colors duration-200">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="#"
+                                                class="text-green-600 hover:text-green-900 px-2 py-1 rounded hover:bg-green-50 transition-colors duration-200">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="#"
+                                                class="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50 transition-colors duration-200">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="font-medium text-gray-900">Business Workshop</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">Oct 20, 2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">Chicago, IL</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">85</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span
+                                            class="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-blue-100 text-blue-800">Completed</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex space-x-2 justify-end">
+                                            <a href="#"
+                                                class="text-blue-600 hover:text-blue-900 px-2 py-1 rounded hover:bg-blue-50 transition-colors duration-200">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="#"
+                                                class="text-green-600 hover:text-green-900 px-2 py-1 rounded hover:bg-green-50 transition-colors duration-200">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="#"
+                                                class="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50 transition-colors duration-200">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="px-6 py-4 border-t border-gray-200 text-center">
                     <a href="{{ route('organizer.events.index') }}"
-                        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                         View All Events
+                        <i class="fas fa-chevron-right ml-1"></i>
                     </a>
                 </div>
             </div>
 
-            <!-- Scan QR Section -->
+            <!-- Scan QR Button -->
             <div class="bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md mt-8">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">Scan QR for Attendance</h3>
                 </div>
-                <div class="p-6">
-                    <button id="toggleQrScanner"
-                        class="mb-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 mr-2 h-5 w-5" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L19.5 13" />
-                        </svg>
-                        Start QR Scanner
+                <div class="p-6 text-center">
+                    <button id="open-qr-modal"
+                        class="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-qrcode mr-2"></i>
+                        Open QR Scanner
                     </button>
+                </div>
+            </div>
 
-                    <div id="qrScannerContainer" class="hidden mt-4">
-                        <div class="relative">
-                            <video id="qrVideo"
-                                class="w-full h-64 rounded-lg border border-gray-200 bg-gray-100"></video>
-                            <div id="qrResult" class="mt-4 p-4 bg-gray-50 rounded-lg text-center text-gray-700">
-                                Scan a QR code to check attendance.
-                            </div>
-                            <div class="mt-4 flex justify-center gap-4">
-                                <button id="confirmAttendance"
-                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-                                    disabled>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 mr-2 h-5 w-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Confirm Attendance
-                                </button>
-                                <button id="cancelScan"
-                                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
+            <!-- QR Scanner Modal -->
+            <div id="qr-modal"
+                class="fixed inset-0 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4 hidden">
+                <div class="relative w-full max-w-md bg-white rounded-lg shadow-xl">
+                    <div class="flex justify-between items-center p-4">
+                        <h3 class="text-lg font-medium text-gray-900">Scan QR Code</h3>
+                        <button id="close-qr-modal"
+                            class="text-gray-400 hover:text-gray-600 focus:outline-none transition-colors duration-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div id="reader" style="width: 100%; height: 300px;"
+                            class="border border-gray-200 rounded-md mb-4"></div>
+                        <p class="text-sm font-medium">Result: <span id="qr-result"
+                                class="text-gray-700 font-normal"></span></p>
+                        <p id="qr-error" class="text-red-600 text-sm mt-2 hidden"></p>
+                    </div>
+                    <div class="p-4 flex justify-center space-x-4">
+                        <button id="start-scan"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
+                            <i class="fas fa-play mr-2"></i>Start Scan
+                        </button>
+                        <button id="stop-scan"
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200 hidden">
+                            <i class="fas fa-stop mr-2"></i>Stop Scan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div id="success-modal"
+                class="fixed inset-0 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4 hidden">
+                <div class="relative w-full max-w-md bg-white rounded-lg shadow-xl">
+                    <div class="flex justify-between items-center p-4">
+                        <h3 class="text-lg font-medium text-gray-900">Attendance Confirmed</h3>
+                        <button id="close-success-modal"
+                            class="text-gray-400 hover:text-gray-600 focus:outline-none transition-colors duration-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="p-4 text-center">
+                        <p class="text-green-600">Attendance has been successfully confirmed!</p>
+                        <p class="mt-2"><strong>Event:</strong> <span id="success-event-name"></span></p>
+                    </div>
+                    <div class="p-4 flex justify-center">
+                        <button id="close-success-modal-btn"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
+                            Close
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    @push('scripts')
-        <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+    @include('components.footer')
+
+    @push('style')
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <style>
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            @media (max-width: 640px) {
+                .table-responsive {
+                    min-width: 600px;
+                }
+            }
+
+            .transition-colors {
+                transition-property: background-color, border-color, color, fill, stroke;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 200ms;
+            }
+        </style>
+    @endpush
+
+    @push('script')
+        <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const toggleQrScanner = document.getElementById('toggleQrScanner');
-                const qrScannerContainer = document.getElementById('qrScannerContainer');
-                const qrVideo = document.getElementById('qrVideo');
-                const qrResult = document.getElementById('qrResult');
-                const confirmAttendance = document.getElementById('confirmAttendance');
-                const cancelScan = document.getElementById('cancelScan');
+            document.addEventListener('DOMContentLoaded', () => {
+                // QR Scanner elements
+                const openModalButton = document.getElementById('open-qr-modal');
+                const closeModalButton = document.getElementById('close-qr-modal');
+                const qrModal = document.getElementById('qr-modal');
+                const qrResult = document.getElementById('qr-result');
+                const qrError = document.getElementById('qr-error');
+                const startButton = document.getElementById('start-scan');
+                const stopButton = document.getElementById('stop-scan');
+                const successModal = document.getElementById('success-modal');
+                const successEventName = document.getElementById('success-event-name');
 
-                let html5QrcodeScanner = null;
+                let html5QrCode = null;
 
-                toggleQrScanner.addEventListener('click', function() {
-                    if (qrScannerContainer.classList.contains('hidden')) {
-                        qrScannerContainer.classList.remove('hidden');
-                        startQrScanner();
-                    } else {
-                        stopQrScanner();
-                        qrScannerContainer.classList.add('hidden');
-                        qrResult.textContent = 'Scan a QR code to check attendance.';
-                        confirmAttendance.disabled = true;
-                    }
-                });
+                function showError(message) {
+                    qrError.textContent = message;
+                    qrError.classList.remove('hidden');
+                    console.error('QR Error:', message);
+                }
 
-                cancelScan.addEventListener('click', function() {
-                    stopQrScanner();
-                    qrScannerContainer.classList.add('hidden');
-                    qrResult.textContent = 'Scan a QR code to check attendance.';
-                    confirmAttendance.disabled = true;
-                });
+                function clearError() {
+                    qrError.textContent = '';
+                    qrError.classList.add('hidden');
+                }
 
-                function startQrScanner() {
-                    if (html5QrcodeScanner) {
-                        html5QrcodeScanner.clear();
-                    }
-                    html5QrcodeScanner = new Html5Qrcode("qrVideo");
-                    html5QrcodeScanner.start({
-                            facingMode: "environment"
-                        }, // Use rear camera
-                        {
-                            fps: 10,
-                            qrbox: 250
-                        },
-                        (decodedText, decodedResult) => {
-                            qrResult.textContent = `Scanned: ${decodedText}`;
-                            confirmAttendance.disabled = false;
-                        },
-                        (error) => {
-                            console.warn(error);
+                function showSuccess(message, eventName = '') {
+                    successEventName.textContent = eventName;
+                    qrResult.innerHTML = `<span class="text-green-600">${message}</span>`;
+                    successModal.classList.remove('hidden');
+                    console.log('QR Success:', message);
+                }
+
+                async function onScanSuccess(decodedText, decodedResult) {
+                    console.log('QR Code Scanned:', decodedText);
+                    qrResult.innerHTML = 'Processing... <i class="fas fa-spinner fa-spin ml-1"></i>';
+                    clearError();
+
+                    try {
+                        // Parse the QR code content (assuming format: "registration_id:detail_id")
+                        const [registrationId, detailId] = decodedText.split(':');
+
+                        if (!registrationId || !detailId) {
+                            throw new Error('Invalid QR code format');
                         }
-                    ).catch(err => {
-                        console.error('Failed to start QR scanner:', err);
-                        qrResult.textContent =
-                            'Error starting scanner. Please ensure camera access is granted.';
+
+                        // Call Node.js backend API
+                        const response = await fetch('http://localhost:5000/api/attendance/scan', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                qr_code: decodedText,
+                                registration_id: registrationId,
+                                event_detail_id: detailId
+                            })
+                        });
+
+                        console.log('API Response Status:', response.status);
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.message || 'Failed to verify attendance');
+                        }
+
+                        const data = await response.json();
+                        console.log('API Response Data:', data);
+
+                        // Show success with actual data from API
+                        showSuccess('Attendance confirmed!', data.data?.event_name || 'Event');
+                        stopScanner();
+
+                    } catch (error) {
+                        console.error('Scan processing error:', error);
+                        showError(error.message);
+                        stopScanner();
+                    }
+                }
+
+                function onScanError(error) {
+                    if (error && error.includes('No MultiFormat Readers')) {
+                        showError('QR code not recognized. Please try again.');
+                    } else {
+                        showError('Scan error: ' + (error || 'Unknown error'));
+                    }
+                }
+
+                function startScanner() {
+                    if (!html5QrCode) {
+                        html5QrCode = new Html5Qrcode('reader');
+                    }
+
+                    Html5Qrcode.getCameras().then(devices => {
+                        if (devices && devices.length) {
+                            const cameraId = devices[0].id;
+                            const config = {
+                                fps: 10,
+                                qrbox: {
+                                    width: 250,
+                                    height: 250
+                                },
+                                formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+                            };
+
+                            html5QrCode.start(
+                                cameraId,
+                                config,
+                                onScanSuccess,
+                                onScanError
+                            ).then(() => {
+                                startButton.classList.add('hidden');
+                                stopButton.classList.remove('hidden');
+                                clearError();
+                                qrResult.textContent = 'Scanning...';
+                            }).catch(err => {
+                                showError('Failed to start scanner: ' + err);
+                            });
+                        } else {
+                            showError('No cameras found on this device.');
+                        }
+                    }).catch(err => {
+                        showError('Camera access denied or unavailable: ' + err);
                     });
                 }
 
-                function stopQrScanner() {
-                    if (html5QrcodeScanner) {
-                        html5QrcodeScanner.clear();
-                        html5QrcodeScanner = null;
+                function stopScanner() {
+                    if (html5QrCode) {
+                        html5QrCode.stop().then(() => {
+                            html5QrCode.clear();
+                            startButton.classList.remove('hidden');
+                            stopButton.classList.add('hidden');
+                        }).catch(err => {
+                            console.error('Error stopping scanner:', err);
+                        });
                     }
                 }
 
-                confirmAttendance.addEventListener('click', function() {
-                    const scannedData = qrResult.textContent.replace('Scanned: ', '');
-                    // TODO: Implement API call to confirm attendance (e.g., PATCH /api/attendance/:id/scan)
-                    console.log('Confirming attendance for:', scannedData);
-                    qrResult.textContent = `Attendance confirmed for ${scannedData}`;
-                    confirmAttendance.disabled = true;
-                    // Optionally, stop the scanner or refresh the page
-                    // stopQrScanner();
+                // Event listeners
+                openModalButton.addEventListener('click', () => {
+                    qrModal.classList.remove('hidden');
+                    qrResult.textContent = 'Ready to scan';
+                    clearError();
+                });
+
+                closeModalButton.addEventListener('click', () => {
+                    qrModal.classList.add('hidden');
+                    stopScanner();
+                });
+
+                startButton.addEventListener('click', startScanner);
+                stopButton.addEventListener('click', stopScanner);
+
+                // Close modals when clicking outside or pressing ESC
+                [qrModal, successModal].forEach(modal => {
+                    modal.addEventListener('click', (event) => {
+                        if (event.target === modal) {
+                            modal.classList.add('hidden');
+                            if (modal === qrModal) stopScanner();
+                        }
+                    });
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        qrModal.classList.add('hidden');
+                        successModal.classList.add('hidden');
+                        stopScanner();
+                    }
                 });
             });
         </script>
     @endpush
-
-    @include('components.footer')
 @endsection

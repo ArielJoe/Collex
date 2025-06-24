@@ -1,5 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import QRCode from 'qrcode';
+import crypto from 'crypto';
 
 // Impor Model
 import Cart from '../model/Cart.js';
@@ -10,8 +12,25 @@ import User from '../model/User.js';
 import Registration from '../model/Registration.js';
 import Payment from '../model/Payment.js';
 import Attendance from '../model/Attendance.js';
+import dotenv from "dotenv";
 
 const router = express.Router();
+
+dotenv.config();
+
+const ENCRYPTION_KEY = process.env.QR_ENCRYPTION_KEY; // Must be 32 bytes
+const ALGORITHM = 'aes-256-cbc';
+
+function encrypt(text) {
+    const iv = crypto.randomBytes(16); // Generate random IV (16 bytes for CBC)
+    const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
+    let encrypted = cipher.update(text, 'utf8', 'base64');
+    encrypted += cipher.final('base64');
+    return {
+        iv: iv.toString('base64'),
+        encryptedData: encrypted
+    };
+}
 
 // Endpoint untuk user submit bukti pembayaran untuk satu registrasi
 router.post('/submit-proof', async (req, res) => {
@@ -214,12 +233,12 @@ router.post('/process-cart-checkout', async (req, res) => {
     }
 });
 
-
 // Route untuk admin/finance mengkonfirmasi atau menolak pembayaran
 router.patch('/update-payment-status/:paymentId', async (req, res) => {
     const { paymentId } = req.params;
     const { status, confirmed_by_user_id } = req.body;
 
+    // Input validation
     if (!status || !['confirmed', 'rejected'].includes(status)) {
         return res.status(400).json({ success: false, message: 'Invalid status. Must be "confirmed" or "rejected".' });
     }
@@ -232,8 +251,12 @@ router.patch('/update-payment-status/:paymentId', async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(paymentId)) {
         return res.status(400).json({ success: false, message: 'Invalid Payment ID format.' });
     }
+    if (!ENCRYPTION_KEY || Buffer.from(ENCRYPTION_KEY, 'hex').length !== 32) {
+        return res.status(500).json({ success: false, message: 'Invalid or missing encryption key configuration.' });
+    }
 
     try {
+        // Find payment
         const payment = await Payment.findById(paymentId);
         if (!payment) {
             return res.status(404).json({ success: false, message: 'Payment record not found.' });
@@ -250,39 +273,60 @@ router.patch('/update-payment-status/:paymentId', async (req, res) => {
         }
         await payment.save();
 
+        // Find linked registrations
         const linkedRegistrations = await Registration.find({ payment_id: payment._id }).populate('event_id');
 
         if (status === 'confirmed' && oldStatus !== 'confirmed') {
             for (const registration of linkedRegistrations) {
-                if (registration.event_id && typeof registration.event_id.max_participants === 'number') {
+                // Update event participant count
+                if (registration.event_id && typeof registration.event_id.registered_participant !== 'undefined') {
                     await Event.findByIdAndUpdate(registration.event_id._id, {
                         $inc: { registered_participant: 1 }
                     });
                     console.log(`Incremented participant count for event ${registration.event_id._id}`);
                 }
 
+                // Generate attendance for event detail if applicable
                 if (registration.detail_id) {
+                    const eventDetail = await EventDetail.findById(registration.detail_id);
+                    if (!eventDetail) {
+                        console.warn(`EventDetail not found for ID ${registration.detail_id} during attendance generation.`);
+                        continue;
+                    }
+
+                    // Generate plaintext QR code string
+                    const qrPlaintext = `${registration._id}:${registration.detail_id}`;
+                    // Encrypt QR code
+                    const { iv, encryptedData } = encrypt(qrPlaintext);
+                    const qrCode = `${encryptedData}:${iv}`;
+
+                    // Check for existing attendance
                     const existingAttendance = await Attendance.findOne({
                         registration_id: registration._id,
                         detail_id: registration.detail_id
                     });
 
                     if (!existingAttendance) {
-                        const eventDetail = await EventDetail.findById(registration.detail_id);
-                        if (!eventDetail) {
-                            console.warn(`EventDetail not found for ID ${registration.detail_id} during attendance generation.`);
-                            continue;
+                        // Verify QR code uniqueness
+                        const qrCodeExists = await Attendance.findOne({ qr_code: qrCode });
+                        if (qrCodeExists) {
+                            console.error(`QR code ${qrCode} already exists for another attendance record.`);
+                            return res.status(500).json({
+                                success: false,
+                                message: 'QR code conflict detected. Please try again.'
+                            });
                         }
 
+                        // Create new attendance record
                         const newAttendance = new Attendance({
                             registration_id: registration._id,
                             detail_id: registration.detail_id,
-                            qr_code: new mongoose.Types.ObjectId().toString(),
+                            qr_code: qrCode,
                             scanned_by: null,
                             scanned_at: null,
                         });
                         await newAttendance.save();
-                        console.log(`Attendance generated for registration ${registration._id} and detail ${registration.detail_id}`);
+                        console.log(`Attendance generated for registration ${registration._id} and detail ${registration.detail_id} with encrypted QR code`);
                     } else {
                         console.log(`Attendance already exists for registration ${registration._id} and detail ${registration.detail_id}`);
                     }
@@ -290,15 +334,23 @@ router.patch('/update-payment-status/:paymentId', async (req, res) => {
             }
         } else if (oldStatus === 'confirmed' && status !== 'confirmed') {
             for (const registration of linkedRegistrations) {
-                if (registration.event_id && typeof registration.event_id.max_participants === 'number') {
+                // Decrease event participant count
+                if (registration.event_id && typeof registration.event_id.registered_participant !== 'undefined') {
                     await Event.findByIdAndUpdate(registration.event_id._id, {
                         $inc: { registered_participant: -1 }
                     });
                     console.log(`Decremented participant count for event ${registration.event_id._id}`);
                 }
+
+                // Delete associated attendance
                 if (registration.detail_id) {
-                    await Attendance.deleteOne({ registration_id: registration._id, detail_id: registration.detail_id });
-                    console.log(`Attendance deleted for registration ${registration._id} and detail ${registration.detail_id} due to payment status change from confirmed.`);
+                    const deleted = await Attendance.deleteOne({
+                        registration_id: registration._id,
+                        detail_id: registration.detail_id
+                    });
+                    if (deleted.deletedCount > 0) {
+                        console.log(`Attendance deleted for registration ${registration._id} and detail ${registration.detail_id} due to payment status change from confirmed.`);
+                    }
                 }
             }
         }
@@ -311,7 +363,11 @@ router.patch('/update-payment-status/:paymentId', async (req, res) => {
 
     } catch (error) {
         console.error('Error updating payment status:', error);
-        res.status(500).json({ success: false, message: 'Server error while updating payment status.', error: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating payment status.',
+            error: error.message
+        });
     }
 });
 

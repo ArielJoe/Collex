@@ -11,7 +11,6 @@ const router = express.Router();
 // --- GET All Active Tickets (Confirmed or Pending) for a specific User ---
 router.get('/my-tickets/:userId', async (req, res) => {
     const { userId } = req.params;
-    console.log(userId);
 
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ success: false, message: 'A valid User ID must be provided in the URL.' });
@@ -30,6 +29,26 @@ router.get('/my-tickets/:userId', async (req, res) => {
             { $unwind: { path: "$detailInfo", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$packageInfo", preserveNullAndEmptyArrays: true } },
             {
+                $lookup: {
+                    from: "attendance",
+                    let: { regId: "$_id", detailId: "$detail_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$registration_id", "$$regId"] },
+                                        { $eq: ["$detail_id", { $ifNull: ["$$detailId", null] }] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: "attendanceInfo"
+                }
+            },
+            { $unwind: { path: "$attendanceInfo", preserveNullAndEmptyArrays: true } },
+            {
                 $project: {
                     _id: 0,
                     eventId: "$eventInfo._id",
@@ -45,6 +64,7 @@ router.get('/my-tickets/:userId', async (req, res) => {
                     },
                     paymentStatus: "$paymentInfo.status",
                     confirmedAt: "$paymentInfo.confirmed_at",
+                    qr_code: { $cond: { if: { $eq: ["$paymentInfo.status", "confirmed"] }, then: "$attendanceInfo.qr_code", else: null } }
                 }
             },
             {
@@ -57,6 +77,7 @@ router.get('/my-tickets/:userId', async (req, res) => {
                     end_time: { $first: "$end_time" },
                     paymentStatus: { $first: "$paymentStatus" },
                     confirmedAt: { $first: "$confirmedAt" },
+                    qr_code: { $first: "$qr_code" }, // Include QR code from the first matching attendance
                     purchasedItems: {
                         $push: {
                             type: "$purchasedItem.type",
@@ -77,6 +98,7 @@ router.get('/my-tickets/:userId', async (req, res) => {
                     end_time: 1,
                     paymentStatus: 1,
                     confirmedAt: 1,
+                    qr_code: 1,
                     purchasedItems: 1
                 }
             }
