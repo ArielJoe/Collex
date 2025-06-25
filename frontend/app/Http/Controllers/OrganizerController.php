@@ -348,4 +348,102 @@ class OrganizerController extends Controller
             return back()->with('error', 'Terjadi kesalahan saat menghapus event.');
         }
     }
+
+    public function createCertificate()
+    {
+        try {
+            $response = Http::get('http://localhost:5000/api/certificates/eligible/' . session()->get('userId'));
+            $data = $response->json();
+
+            if (!$response->successful()) {
+                return back()->with('error', 'Gagal mengambil data registrasi peserta.');
+            }
+
+            return view('organizer.certificates.create', [
+                'registrations' => $data['data']
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Gagal mengambil registrasi: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan.');
+        }
+    }
+
+    public function storeCertificate(Request $request)
+    {
+        $request->validate([
+            'registration_id' => 'required|string',
+            'certificate' => 'required|file|mimes:pdf|max:2048',
+        ]);
+
+        try {
+            // Upload PDF ke public/certificates
+            $file = $request->file('certificate');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+
+            // Pastikan folder public/certificates ada
+            $file->move(public_path('certificates'), $fileName);
+            $fileUrl = asset('certificates/' . $fileName); // URL untuk dilihat user
+
+            // Ambil detail_id dari registration lewat API
+            $registrationApiUrl = 'http://localhost:5000' . '/api/registration/' . $request->registration_id . '?user_id=' . session()->get('userId');
+            $regResponse = Http::get($registrationApiUrl);
+
+            // dd($regResponse->json());
+
+            if (!$regResponse->successful()) {
+                return back()->with('error', 'Gagal mengambil data registrasi.');
+            }
+
+            $regData = $regResponse->json();
+
+            // Validasi struktur data
+            if (!isset($regData['data']['item']['_id'])) {
+                return back()->with('error', 'Detail acara tidak ditemukan dalam data registrasi.');
+            }
+
+            $detailId = $regData['data']['item']['_id'];
+
+            // Siapkan payload ke API Node.js
+            $payload = [
+                'registration_id' => $request->registration_id,
+                'detail_id'       => $detailId,
+                'certificate_url' => $fileUrl,
+                'uploaded_by'     => session()->get('userId'),
+            ];
+
+            // Kirim ke API /api/certificates
+            $apiResponse = Http::post('http://localhost:5000' . '/api/certificates', $payload);
+            $apiData = $apiResponse->json();
+
+            if (!$apiResponse->successful() || !$apiData['success']) {
+                return back()->with('error', $apiData['message'] ?? 'Gagal mengunggah sertifikat.');
+            }
+
+            return redirect()->route('organizer.events.index')
+                ->with('success', 'Sertifikat berhasil diunggah.');
+        } catch (\Exception $e) {
+            dd($e);
+            Log::error('Upload sertifikat gagal: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mengunggah sertifikat.');
+        }
+    }
+
+    public function certificatesIndex()
+    {
+        try {
+            $response = Http::get('http://localhost:5000' . '/api/certificates/organizer/' . session()->get('userId'));
+            $data = $response->json();
+
+            if (!$response->successful() || !$data['success']) {
+                return back()->with('error', 'Gagal mengambil daftar sertifikat.');
+            }
+
+            return view('organizer.certificates.index', [
+                'certificates' => $data['data']
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Gagal mengambil data sertifikat: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat mengambil sertifikat.');
+        }
+    }
 }

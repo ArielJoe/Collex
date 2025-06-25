@@ -92,11 +92,19 @@
                                     @if ($event['confirmedAt'])
                                         {{ \Carbon\Carbon::parse($event['confirmedAt'])->format('D, M j, Y') }}
                                     @else
-                                        <span
-                                            class="inline-flex items-center px-2 py-1 rounded-md text-sm bg-yellow-50 text-yellow-700 border border-yellow-200">
-                                            <span class="mr-1">⏳</span>
-                                            Not confirmed yet
-                                        </span>
+                                        @if ($event['paymentStatus'] === 'rejected')
+                                            <span
+                                                class="inline-flex items-center px-2 py-1 rounded-md text-sm bg-red-50 text-red-700 border border-red-200">
+                                                <span class="mr-1">✗</span>
+                                                Payment Rejected
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center px-2 py-1 rounded-md text-sm bg-yellow-50 text-yellow-700 border border-yellow-200">
+                                                <span class="mr-1">⏳</span>
+                                                Not confirmed yet
+                                            </span>
+                                        @endif
                                     @endif
                                 </p>
                             </div>

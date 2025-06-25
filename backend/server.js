@@ -10,6 +10,7 @@ import paymentRoutes from "./routes/payment.js";
 import registrationRoutes from "./routes/registration.js";
 import facultyRoutes from "./routes/faculty.js";
 import attendanceRoutes from "./routes/attendance.js";
+import certificatesRoutes from "./routes/certificates.js";
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/registration", registrationRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/certificates", certificatesRoutes);
 
 const PORT = 5000;
 

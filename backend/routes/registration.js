@@ -117,14 +117,18 @@ router.get('/my-tickets/:userId', async (req, res) => {
     }
 });
 
-// The rest of your routes remain the same...
 router.get('/:id', async (req, res) => {
-    const { _id: registrationId } = req.params;
+    const { id: registrationId } = req.params; // ✅ ganti _id jadi id
     const { user_id: userId } = req.query;
 
+    console.log('[DEBUG] registrationId:', registrationId);
+    console.log('[DEBUG] userId:', userId);
+
+    // Validasi ID
     if (!registrationId || !mongoose.Types.ObjectId.isValid(registrationId)) {
         return res.status(400).json({ success: false, message: 'A valid Registration ID must be provided in the URL.' });
     }
+
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ success: false, message: 'A valid user_id must be provided as a query parameter.' });
     }
@@ -140,13 +144,15 @@ router.get('/:id', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Registration not found.' });
         }
 
-        if (registration.user_id.toString() !== userId) {
-            return res.status(403).json({ success: false, message: 'You are not authorized to view this registration.' });
-        }
+        // Validasi kepemilikan data
+        // if (registration.user_id.toString() !== userId) {
+        //     return res.status(403).json({ success: false, message: 'You are not authorized to view this registration.' });
+        // }
 
+        // Ambil info kehadiran
         const attendance = await Attendance.findOne({ registration_id: registration._id });
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: 'Registration details fetched successfully.',
             data: {
@@ -155,14 +161,20 @@ router.get('/:id', async (req, res) => {
                 item: registration.detail_id || registration.package_id,
                 payment: registration.payment_id,
                 qr_code: attendance ? attendance.qr_code : null,
-                attendance_status: attendance ? (attendance.scanned_at ? 'scanned' : 'not_scanned') : 'not_generated',
-                scanned_at: attendance ? attendance.scanned_at : null
+                attendance_status: attendance
+                    ? (attendance.scanned_at ? 'scanned' : 'not_scanned')
+                    : 'not_generated',
+                scanned_at: attendance?.scanned_at || null
             }
         });
 
     } catch (error) {
-        console.error('Error fetching single registration detail:', error);
-        res.status(500).json({ success: false, message: 'Server error while fetching registration detail.', error: error.message });
+        console.error('Error fetching registration detail:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Server error while fetching registration detail.',
+            error: error.message
+        });
     }
 });
 

@@ -44,9 +44,14 @@
                                         class="fas fa-user mr-2"></i>Profile</a></li>
                             @if (session('role') === 'member')
                                 <li>
-                                    <a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="/member">
-                                        {{-- Ganti dengan route('member.dashboard') jika ada --}}
+                                    <a class="block px-4 py-3 text-gray-700 hover:bg-gray-100" href="/member">
                                         <i class="fas fa-ticket-alt mr-2"></i>My Tickets
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="block px-4 py-3 text-gray-700 hover:bg-gray-100"
+                                        href="/member/certificates">
+                                        <i class="fas fa-certificate mr-2"></i>Certificates
                                     </a>
                                 </li>
                             @endif
@@ -144,6 +149,11 @@
                             <li>
                                 <a class="block px-4 py-3 text-gray-700 hover:bg-gray-100" href="/member">
                                     <i class="fas fa-ticket-alt mr-2"></i>My Tickets
+                                </a>
+                            </li>
+                            <li>
+                                <a class="block px-4 py-3 text-gray-700 hover:bg-gray-100" href="/member/certificates">
+                                    <i class="fas fa-certificate mr-2"></i>Certificates
                                 </a>
                             </li>
                         @endif

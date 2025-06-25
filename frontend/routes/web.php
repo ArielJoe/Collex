@@ -55,6 +55,8 @@ Route::prefix('cart')->name('cart.')->group(function () { // Pastikan middleware
 
 Route::middleware('role')->prefix('organizer')->name('organizer.')->group(function () {
     Route::get('/', [OrganizerController::class, 'index'])->name('index');
+
+    // Events
     Route::get('/events', [OrganizerController::class, 'events'])->name('events.index');
     Route::get('/events/create', [OrganizerController::class, 'createEvent'])->name('events.create');
     Route::post('/events', [OrganizerController::class, 'storeEvent'])->name('events.store');
@@ -62,6 +64,11 @@ Route::middleware('role')->prefix('organizer')->name('organizer.')->group(functi
     Route::get('/events/{event}/edit', [OrganizerController::class, 'editEvent'])->name('events.edit');
     Route::put('/events/{event}', [OrganizerController::class, 'updateEvent'])->name('events.update');
     Route::delete('/events/{event}', [OrganizerController::class, 'destroyEvent'])->name('events.destroy');
+
+    // Certificates
+    Route::get('/certificates', [OrganizerController::class, 'certificatesIndex'])->name('certificates.index'); // ✅ tampilkan semua
+    Route::get('/certificates/upload', [OrganizerController::class, 'createCertificate'])->name('certificates.create'); // ✅ form upload
+    Route::post('/certificates', [OrganizerController::class, 'storeCertificate'])->name('certificates.store'); // ✅ proses upload
 });
 
 Route::middleware('role')->prefix('finance')->name('finance.')->group(function () {
@@ -72,6 +79,7 @@ Route::middleware('role')->prefix('finance')->name('finance.')->group(function (
 
 Route::middleware('role')->prefix('member')->name('member.')->group(function () {
     Route::get('/', [RegistrationController::class, 'showMyTickets'])->name('tickets');
+    Route::get('/certificates', [MemberController::class, 'certificates'])->name('certificates');
 });
 
 Route::middleware('role')

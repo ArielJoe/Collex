@@ -354,7 +354,7 @@ const seedDatabase = async () => {
             certificatesData.push({
                 registration_id: att.registration_id,
                 detail_id: att.detail_id,
-                certificate_url: faker.internet.url() + `/certificates/${att.registration_id}-${att.detail_id}.pdf`,
+                certificate_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // ← online dummy PDF
                 uploaded_by: defaultScannerOrUploader._id,
                 uploaded_at: faker.date.recent({ days: 7, refDate: currentDate }),
             });
