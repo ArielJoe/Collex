@@ -81,7 +81,7 @@
                                         Time <span class="text-red-500">*</span></label>
                                     <input type="datetime-local" id="start_time" name="start_time" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('start_time') border-red-500 @enderror"
-                                        value="{{ old('start_time', isset($event['data']['start_time']) ? \Carbon\Carbon::parse($event['data']['start_time'])->format('Y-m-d\TH:i') : '') }}">
+                                        value="{{ old('start_time', isset($event['data']['start_time']) ? \Carbon\Carbon::parse($event['data']['start_time'])->setTimezone('Asia/Jakarta')->format('Y-m-d\TH:i') : '') }}">
                                     @error('start_time')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -93,7 +93,7 @@
                                         <span class="text-red-500">*</span></label>
                                     <input type="datetime-local" id="end_time" name="end_time" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('end_time') border-red-500 @enderror"
-                                        value="{{ old('end_time', isset($event['data']['end_time']) ? \Carbon\Carbon::parse($event['data']['end_time'])->format('Y-m-d\TH:i') : '') }}">
+                                        value="{{ old('end_time', isset($event['data']['end_time']) ? \Carbon\Carbon::parse($event['data']['end_time'])->setTimezone('Asia/Jakarta')->format('Y-m-d\TH:i') : '') }}">
                                     @error('end_time')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -201,7 +201,7 @@
                                                 <input type="datetime-local" id="session_start_time_{{ $index }}"
                                                     name="sessions[{{ $index }}][start_time]" required
                                                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                    value="{{ old("sessions.$index.start_time", isset($detail['start_time']) ? \Carbon\Carbon::parse($detail['start_time'])->format('Y-m-d\TH:i') : '') }}">
+                                                    value="{{ old("sessions.$index.start_time", isset($detail['start_time']) ? \Carbon\Carbon::parse($detail['start_time'])->setTimezone('Asia/Jakarta')->format('Y-m-d\TH:i') : '') }}">
                                             </div>
                                             <div>
                                                 <label for="session_end_time_{{ $index }}"
@@ -210,7 +210,7 @@
                                                 <input type="datetime-local" id="session_end_time_{{ $index }}"
                                                     name="sessions[{{ $index }}][end_time]" required
                                                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                    value="{{ old("sessions.$index.end_time", isset($detail['end_time']) ? \Carbon\Carbon::parse($detail['end_time'])->format('Y-m-d\TH:i') : '') }}">
+                                                    value="{{ old("sessions.$index.end_time", isset($detail['end_time']) ? \Carbon\Carbon::parse($detail['end_time'])->setTimezone('Asia/Jakarta')->format('Y-m-d\TH:i') : '') }}">
                                             </div>
                                         </div>
 

@@ -354,4 +354,155 @@ router.get('/by-organizer/:organizerId', async (req, res) => {
     }
 });
 
+// Get all event details by event ID
+router.get('/event-details/by-event/:eventId', async (req, res) => {
+    try {
+        const eventId = req.params.eventId;
+
+        // Validate event ID
+        if (!mongoose.Types.ObjectId.isValid(eventId)) {
+            return res.status(400).json({ success: false, message: 'Invalid event ID' });
+        }
+
+        // Check if event exists
+        const eventExists = await Event.findById(eventId);
+        if (!eventExists) {
+            return res.status(404).json({ success: false, message: 'Event not found' });
+        }
+
+        // Get all event details
+        const eventDetails = await EventDetail.find({ event_id: eventId });
+
+        // Convert Decimal128 prices to string
+        const formattedDetails = eventDetails.map(detail => {
+            const detailObj = detail.toObject();
+            if (detailObj.price) {
+                detailObj.price = detailObj.price.toString();
+            }
+            return detailObj;
+        });
+
+        res.status(200).json({
+            success: true,
+            data: formattedDetails,
+            totalDetails: formattedDetails.length
+        });
+    } catch (error) {
+        console.error(`Error fetching event details for event ${req.params.eventId}:`, error);
+        res.status(500).json({ success: false, message: 'Server error while fetching event details' });
+    }
+});
+
+// Update event detail by ID
+router.put('/details/:detailId', async (req, res) => {
+    try {
+        const detailId = req.params.detailId;
+        const { event_id, title, start_time, end_time, location, speaker, description, price } = req.body;
+
+        // Validate detail ID
+        if (!mongoose.Types.ObjectId.isValid(detailId)) {
+            return res.status(400).json({ success: false, message: 'Invalid event detail ID' });
+        }
+
+        // Validate event ID
+        if (!event_id || !mongoose.Types.ObjectId.isValid(event_id)) {
+            return res.status(400).json({ success: false, message: 'Invalid event ID' });
+        }
+
+        // Validate required fields
+        if (!title || !start_time || !end_time || !location || !speaker || !description) {
+            return res.status(400).json({ success: false, message: 'All fields except price are required' });
+        }
+
+        // Validate date consistency
+        if (new Date(end_time) <= new Date(start_time)) {
+            return res.status(400).json({ success: false, message: 'End time must be after start time' });
+        }
+
+        // Check if event exists
+        const eventExists = await Event.findById(event_id);
+        if (!eventExists) {
+            return res.status(404).json({ success: false, message: 'Event not found' });
+        }
+
+        // Check if detail exists
+        const detailExists = await EventDetail.findById(detailId);
+        if (!detailExists) {
+            return res.status(404).json({ success: false, message: 'Event detail not found' });
+        }
+
+        // Update event detail
+        const updateData = {
+            event_id,
+            title,
+            start_time: new Date(start_time),
+            end_time: new Date(end_time),
+            location,
+            speaker,
+            description,
+            price: price ? mongoose.Types.Decimal128.fromString(price.toString()) : null,
+        };
+
+        const updatedDetail = await EventDetail.findByIdAndUpdate(
+            detailId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedDetail) {
+            return res.status(404).json({ success: false, message: 'Event detail not found' });
+        }
+
+        // Convert Decimal128 price to string for response
+        const detailObj = updatedDetail.toObject();
+        if (detailObj.price) {
+            detailObj.price = detailObj.price.toString();
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Event detail updated successfully',
+            data: detailObj
+        });
+    } catch (error) {
+        console.error(`Error updating event detail ${req.params.detailId}:`, error);
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+        res.status(500).json({ success: false, message: 'Server error while updating event detail' });
+    }
+});
+
+// Delete event detail by ID
+router.delete('/details/:detailId', async (req, res) => {
+    try {
+        const detailId = req.params.detailId;
+
+        // Validate detail ID
+        if (!mongoose.Types.ObjectId.isValid(detailId)) {
+            return res.status(400).json({ PolitikanID: detailId });
+        }
+
+        // Check if detail exists
+        const detail = await EventDetail.findById(detailId);
+        if (!detail) {
+            return res.status(404).json({ success: false, message: 'Event detail not found' });
+        }
+
+        // Delete the event detail
+        await EventDetail.findByIdAndDelete(detailId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Event detail deleted successfully'
+        });
+    } catch (error) {
+        console.error(`Error deleting event detail ${req.params.detailId}:`, error);
+        if (error.kind === 'ObjectId') {
+            return res.status(404).json({ success: false, message: 'Event detail not found (invalid ID format)' });
+        }
+        res.status(500).json({ success: false, message: 'Server error while deleting event detail' });
+    }
+});
+
 export default router;

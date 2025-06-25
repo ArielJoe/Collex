@@ -64,7 +64,15 @@ router.get('/my-tickets/:userId', async (req, res) => {
                     },
                     paymentStatus: "$paymentInfo.status",
                     confirmedAt: "$paymentInfo.confirmed_at",
-                    qr_code: { $cond: { if: { $eq: ["$paymentInfo.status", "confirmed"] }, then: "$attendanceInfo.qr_code", else: null } }
+                    qr_code: { $cond: { if: { $eq: ["$paymentInfo.status", "confirmed"] }, then: "$attendanceInfo.qr_code", else: null } },
+                    attendance_status: {
+                        $cond: {
+                            if: "$attendanceInfo",
+                            then: { $cond: { if: "$attendanceInfo.scanned_at", then: "scanned", else: "not_scanned" } },
+                            else: "not_generated"
+                        }
+                    },
+                    scanned_at: "$attendanceInfo.scanned_at"
                 }
             },
             {
@@ -77,7 +85,9 @@ router.get('/my-tickets/:userId', async (req, res) => {
                     end_time: { $first: "$end_time" },
                     paymentStatus: { $first: "$paymentStatus" },
                     confirmedAt: { $first: "$confirmedAt" },
-                    qr_code: { $first: "$qr_code" }, // Include QR code from the first matching attendance
+                    qr_code: { $first: "$qr_code" },
+                    attendance_status: { $first: "$attendance_status" },
+                    scanned_at: { $first: "$scanned_at" },
                     purchasedItems: {
                         $push: {
                             type: "$purchasedItem.type",
@@ -99,6 +109,8 @@ router.get('/my-tickets/:userId', async (req, res) => {
                     paymentStatus: 1,
                     confirmedAt: 1,
                     qr_code: 1,
+                    attendance_status: 1,
+                    scanned_at: 1,
                     purchasedItems: 1
                 }
             }

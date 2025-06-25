@@ -24,7 +24,7 @@
             @forelse ($tickets as $event)
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
                     <!-- Fixed size image container at top -->
-                    <div class="w-full h-60"> <!-- Fixed height for all images -->
+                    <div class="w-full h-60">
                         <img src="{{ $event['poster_url'] ?? 'https://via.placeholder.com/800x300.png?text=No+Image' }}"
                             alt="{{ $event['eventName'] }} Poster" class="w-full h-full object-cover">
                     </div>
@@ -83,14 +83,14 @@
                             <div class="space-y-2">
                                 <span class="block text-sm font-medium text-gray-500">Event Starts</span>
                                 <p class="text-lg text-gray-700">
-                                    {{ \Carbon\Carbon::parse($event['start_time'])->format('D, M j, Y \a\t g:i A') }}
+                                    {{ \Carbon\Carbon::parse($event['start_time'])->setTimezone('Asia/Jakarta')->format('D, M j, Y \a\t g:i A') }}
                                 </p>
                             </div>
                             <div class="space-y-2">
                                 <span class="block text-sm font-medium text-gray-500">Payment Confirmed</span>
                                 <p class="text-lg text-gray-700">
                                     @if ($event['confirmedAt'])
-                                        {{ \Carbon\Carbon::parse($event['confirmedAt'])->format('D, M j, Y') }}
+                                        {{ \Carbon\Carbon::parse($event['confirmedAt'])->setTimezone('Asia/Jakarta')->format('D, M j, Y') }}
                                     @else
                                         @if ($event['paymentStatus'] === 'rejected')
                                             <span
@@ -169,20 +169,49 @@
                                     </svg>
                                     <p class="text-sm font-medium text-emerald-800">Entry QR Code</p>
                                 </div>
-                                <div class="flex items-center space-x-4">
-                                    @if ($event['qr_code'])
+                                <!-- Attendance Status -->
+                                @if ($event['attendance_status'] === 'scanned')
+                                    <div
+                                        class="mb-4 p-3 bg-green-100 text-green-800 text-sm font-medium rounded border border-green-200">
+                                        <div class="flex items-center">
+                                            <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Anda telah hadir
+                                        </div>
+                                        @if ($event['scanned_at'])
+                                            <p class="text-xs text-green-600 mt-1">
+                                                Discan pada:
+                                                {{ \Carbon\Carbon::parse($event['scanned_at'])->setTimezone('Asia/Jakarta')->format('D, M j, Y \a\t g:i A') }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                @elseif ($event['attendance_status'] === 'not_scanned' && $event['qr_code'])
+                                    <div class="flex items-center space-x-4">
                                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={{ urlencode($event['qr_code']) }}"
                                             alt="QR Code for {{ $event['eventName'] }}"
                                             class="w-30 h-30 object-cover rounded-lg border-2 border-emerald-200 shadow-sm">
-                                    @else
-                                        <span class="text-sm text-emerald-700">QR code not generated yet.</span>
-                                    @endif
-                                    <div class="flex-1">
-                                        <p class="text-sm text-emerald-700 mb-2">Show this QR code at the event entrance for
-                                            quick check-in.</p>
-                                        <p class="text-xs text-emerald-600">Event ID: {{ $event['eventId'] }}</p>
+                                        <div class="flex-1">
+                                            <p class="text-sm text-emerald-700 mb-2">Show this QR code at the event entrance
+                                                for quick check-in.</p>
+                                            <p class="text-xs text-emerald-600">Event ID: {{ $event['eventId'] }}</p>
+                                        </div>
                                     </div>
-                                </div>
+                                @else
+                                    <div
+                                        class="mb-4 p-3 bg-yellow-100 text-yellow-800 text-sm font-medium rounded border border-yellow-200">
+                                        <div class="flex items-center">
+                                            <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Tiket belum discan
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         @elseif ($event['paymentStatus'] === 'pending')
                             <div class="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">

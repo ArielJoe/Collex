@@ -21,15 +21,15 @@ import Payment from "../model/Payment.js";
 dotenv.config();
 
 // Encryption function from your router (ensure consistency)
-const ENCRYPTION_KEY = process.env.QR_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex'); // Default to random key if not set
-const ALGORITHM = 'aes-256-cbc';
+const ENCRYPTION_KEY = process.env.QR_ENCRYPTION_KEY || crypto.randomBytes(32).toString("hex"); // Default to random key if not set
+const ALGORITHM = "aes-256-cbc";
 
 function encrypt(text) {
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
-    let encrypted = cipher.update(text, 'utf8', 'base64');
-    encrypted += cipher.final('base64');
-    return `${encrypted}:${iv.toString('base64')}`;
+    const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY, "hex"), iv);
+    let encrypted = cipher.update(text, "utf8", "base64");
+    encrypted += cipher.final("base64");
+    return `${encrypted}:${iv.toString("base64")}`;
 }
 
 // Helper function for safe date generation
@@ -52,7 +52,7 @@ const clearDatabase = async () => {
         Attendance,
         Cart,
         Certificate,
-        Payment
+        Payment,
     ];
     for (const model of collections) {
         try {
@@ -70,17 +70,17 @@ const seedDatabase = async () => {
         await connectDB();
         await clearDatabase();
 
-        const currentDate = new Date("2025-06-24T08:18:00+07:00"); // Updated to current date and time
+        const currentDate = new Date("2025-06-25T13:16:00+07:00"); // Updated to current date and time
 
         // --- 1. Seed Faculties ---
         console.log("Seeding faculties...");
         const createdFaculties = await Faculty.insertMany([
-            { name: 'Fakultas Kedokteran', code: 'FK' },
-            { name: 'Fakultas Kedokteran Gigi', code: 'FKG' },
-            { name: 'Fakultas Psikologi', code: 'FP' },
-            { name: 'Fakultas Teknologi dan Rekayasa Cerdas', code: 'FTRC' },
-            { name: 'Fakultas Humaniora dan Industri Kreatif', code: 'FHIK' },
-            { name: 'Fakultas Hukum dan Bisnis Digital', code: 'FHBD' }
+            { name: "Fakultas Kedokteran", code: "FK" },
+            { name: "Fakultas Kedokteran Gigi", code: "FKG" },
+            { name: "Fakultas Psikologi", code: "FP" },
+            { name: "Fakultas Teknologi dan Rekayasa Cerdas", code: "FTRC" },
+            { name: "Fakultas Humaniora dan Industri Kreatif", code: "FHIK" },
+            { name: "Fakultas Hukum dan Bisnis Digital", code: "FHBD" },
         ]);
         console.log(`${createdFaculties.length} faculties seeded.`);
 
@@ -125,15 +125,15 @@ const seedDatabase = async () => {
                 photo_url: faker.image.avatar(),
                 role: "organizer",
                 is_active: true,
-            }
+            },
         ];
         const createdUsers = await User.insertMany(usersToCreate);
         console.log(`${createdUsers.length} users seeded.`);
 
-        const adminUsers = createdUsers.filter(u => u.role === "admin");
-        const organizerUsers = createdUsers.filter(u => u.role === "organizer");
-        const financeUsers = createdUsers.filter(u => u.role === "finance");
-        const memberUsers = createdUsers.filter(u => u.role === "member");
+        const adminUsers = createdUsers.filter((u) => u.role === "admin");
+        const organizerUsers = createdUsers.filter((u) => u.role === "organizer");
+        const financeUsers = createdUsers.filter((u) => u.role === "finance");
+        const memberUsers = createdUsers.filter((u) => u.role === "member");
 
         const defaultOrganizer = organizerUsers[0];
         const defaultScannerOrUploader = adminUsers[0];
@@ -143,41 +143,302 @@ const seedDatabase = async () => {
         console.log("Seeding events...");
         const eventsData = [
             {
-                name: "Past Tech Summit",
-                location: faker.location.city() + ", " + faker.location.streetAddress(),
+                name: "Annual Medical Symposium 2024",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
                 poster_url: faker.image.urlPicsumPhotos(),
                 registered_participant: mongoose.Types.Decimal128.fromString("0"),
-                max_participant: 200,
+                max_participant: 250,
                 organizer: defaultOrganizer._id,
-                faculty: faker.helpers.arrayElement(createdFaculties)._id,
-                registration_deadline: faker.date.past({ years: 1, refDate: currentDate }),
-                start_time: faker.date.past({ years: 1, refDate: currentDate }),
-                end_time: faker.date.soon({ days: 1, refDate: faker.date.past({ years: 1, refDate: currentDate }) }),
+                faculty: createdFaculties.find((f) => f.code === "FK")._id,
+                registration_deadline: getSafeDateBetween(
+                    new Date("2024-05-01"),
+                    new Date("2024-06-01")
+                ),
+                start_time: new Date("2024-06-15T09:00:00+07:00"),
+                end_time: new Date("2024-06-15T17:00:00+07:00"),
             },
             {
-                name: "Current Workshop",
-                location: faker.location.city() + ", " + faker.location.streetAddress(),
+                name: "Dental Health Workshop 2025",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
                 poster_url: faker.image.urlPicsumPhotos(),
                 registered_participant: mongoose.Types.Decimal128.fromString("0"),
                 max_participant: 150,
                 organizer: defaultOrganizer._id,
-                faculty: faker.helpers.arrayElement(createdFaculties)._id,
-                registration_deadline: faker.date.recent({ days: 5, refDate: currentDate }),
-                start_time: faker.date.soon({ days: 1, refDate: currentDate }),
-                end_time: faker.date.soon({ days: 2, refDate: currentDate }),
+                faculty: createdFaculties.find((f) => f.code === "FKG")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 10 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 14 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 14 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000)
+                ),
             },
             {
-                name: "Future Conference",
-                location: faker.location.city() + ", " + faker.location.streetAddress(),
+                name: "Psychology Awareness Seminar",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 200,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FP")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 20 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 15 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 22 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 15 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 22 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000)
+                ),
+            },
+            {
+                name: "Tech Innovation Expo 2025",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
                 poster_url: faker.image.urlPicsumPhotos(),
                 registered_participant: mongoose.Types.Decimal128.fromString("0"),
                 max_participant: 300,
                 organizer: defaultOrganizer._id,
-                faculty: faker.helpers.arrayElement(createdFaculties)._id,
-                registration_deadline: faker.date.soon({ days: 30, refDate: currentDate }),
-                start_time: faker.date.soon({ days: 31, refDate: currentDate }),
-                end_time: faker.date.soon({ days: 32, refDate: currentDate }),
-            }
+                faculty: createdFaculties.find((f) => f.code === "FTRC")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 25 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 32 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 25 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 32 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000)
+                ),
+            },
+            {
+                name: "Creative Arts Festival",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 180,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FHIK")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 15 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 10 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 17 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 10 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 17 * 24 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000)
+                ),
+            },
+            {
+                name: "Digital Business Summit",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 220,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FHBD")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 25 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 20 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 27 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 20 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 27 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000)
+                ),
+            },
+            {
+                name: "Medical Research Forum 2024",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 200,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FK")._id,
+                registration_deadline: getSafeDateBetween(
+                    new Date("2024-04-01"),
+                    new Date("2024-05-01")
+                ),
+                start_time: new Date("2024-05-20T10:00:00+07:00"),
+                end_time: new Date("2024-05-20T18:00:00+07:00"),
+            },
+            {
+                name: "Oral Health Campaign 2025",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 120,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FKG")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 12 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 8 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 15 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 8 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 15 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000)
+                ),
+            },
+            {
+                name: "Mindfulness Workshop",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 160,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FP")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 18 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 13 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 20 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 13 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 20 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000)
+                ),
+            },
+            {
+                name: "AI Development Hackathon",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 250,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FTRC")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 28 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 23 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 23 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000)
+                ),
+            },
+            {
+                name: "Film Production Masterclass",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 140,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FHIK")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 22 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 17 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 24 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 17 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 24 * 24 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000)
+                ),
+            },
+            {
+                name: "Legal Tech Conference",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 200,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FHBD")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 35 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 37 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 37 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000)
+                ),
+            },
+            {
+                name: "Health Awareness Day 2024",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 180,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FK")._id,
+                registration_deadline: getSafeDateBetween(
+                    new Date("2024-06-01"),
+                    new Date("2024-07-01")
+                ),
+                start_time: new Date("2024-07-10T08:00:00+07:00"),
+                end_time: new Date("2024-07-10T16:00:00+07:00"),
+            },
+            {
+                name: "Dental Innovation Forum",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 130,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FKG")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 14 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 9 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 16 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 9 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 16 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000)
+                ),
+            },
+            {
+                name: "Mental Health Retreat",
+                location: `${faker.location.city()}, ${faker.location.streetAddress()}`,
+                poster_url: faker.image.urlPicsumPhotos(),
+                registered_participant: mongoose.Types.Decimal128.fromString("0"),
+                max_participant: 170,
+                organizer: defaultOrganizer._id,
+                faculty: createdFaculties.find((f) => f.code === "FP")._id,
+                registration_deadline: getSafeDateBetween(
+                    currentDate,
+                    new Date(currentDate.getTime() + 16 * 24 * 60 * 60 * 1000)
+                ),
+                start_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 11 * 24 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 18 * 24 * 60 * 60 * 1000)
+                ),
+                end_time: getSafeDateBetween(
+                    new Date(currentDate.getTime() + 11 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000),
+                    new Date(currentDate.getTime() + 18 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000)
+                ),
+            },
         ];
         const createdEvents = await Event.insertMany(eventsData);
         console.log(`${createdEvents.length} events seeded.`);
@@ -215,20 +476,20 @@ const seedDatabase = async () => {
             eventDetailsData.push(
                 {
                     event_id: event._id,
-                    title: `${event.name} Session 1 (Pembukaan)`,
+                    title: `${event.name} - Opening Session`,
                     start_time: detailStartTime1,
                     end_time: detailEndTime1,
-                    location: "Ruang A1 / " + faker.location.city(),
+                    location: `Ruang A1, ${faker.location.city()}`,
                     speaker: faker.person.fullName(),
                     description: faker.lorem.paragraphs(2),
                     price: mongoose.Types.Decimal128.fromString(faker.commerce.price({ min: 0, max: 250000, dec: 0 })),
                 },
                 {
                     event_id: event._id,
-                    title: `${event.name} Session 2`,
+                    title: `${event.name} - Main Session`,
                     start_time: detailStartTime2,
                     end_time: detailEndTime2,
-                    location: "Ruang A2 / " + faker.location.city(),
+                    location: `Ruang A2, ${faker.location.city()}`,
                     speaker: faker.person.fullName(),
                     description: faker.lorem.paragraphs(2),
                     price: mongoose.Types.Decimal128.fromString(faker.commerce.price({ min: 0, max: 250000, dec: 0 })),
@@ -245,13 +506,13 @@ const seedDatabase = async () => {
             eventPackagesData.push(
                 {
                     event_id: event._id,
-                    package_name: "Tiket Early Bird",
+                    package_name: "Early Bird Ticket",
                     price: mongoose.Types.Decimal128.fromString(faker.commerce.price({ min: 100000, max: 750000, dec: 0 })),
                     description: faker.lorem.sentences(2),
                 },
                 {
                     event_id: event._id,
-                    package_name: "Paket Standar",
+                    package_name: "Standard Package",
                     price: mongoose.Types.Decimal128.fromString(faker.commerce.price({ min: 100000, max: 750000, dec: 0 })),
                     description: faker.lorem.sentences(2),
                 }
@@ -266,19 +527,19 @@ const seedDatabase = async () => {
         const createdPayments = [];
 
         const scenarios = [
-            { user: memberUsers[0], event: createdEvents[0], detailId: createdEventDetails[0]._id, packageId: null, status: 'confirmed' },
-            { user: memberUsers[0], event: createdEvents[1], detailId: createdEventDetails[3]._id, packageId: null, status: 'pending' },
-            { user: memberUsers[0], event: createdEvents[2], detailId: null, packageId: createdEventPackages[4]._id, status: 'rejected' },
-            { user: memberUsers[0], event: createdEvents[0], detailId: createdEventDetails[1]._id, packageId: createdEventPackages[1]._id, status: 'confirmed' },
+            { user: memberUsers[0], event: createdEvents[0], detailId: createdEventDetails[0]._id, packageId: null, status: "confirmed" },
+            { user: memberUsers[0], event: createdEvents[1], detailId: createdEventDetails[3]._id, packageId: null, status: "pending" },
+            { user: memberUsers[0], event: createdEvents[2], detailId: null, packageId: createdEventPackages[4]._id, status: "rejected" },
+            { user: memberUsers[0], event: createdEvents[0], detailId: createdEventDetails[1]._id, packageId: createdEventPackages[1]._id, status: "confirmed" },
         ];
 
         for (const scenario of scenarios) {
             const { user, event, detailId, packageId, status } = scenario;
             let itemPrice = mongoose.Types.Decimal128.fromString("0.00");
             if (detailId) {
-                itemPrice = createdEventDetails.find(ed => ed._id.equals(detailId)).price;
+                itemPrice = createdEventDetails.find((ed) => ed._id.equals(detailId)).price;
             } else if (packageId) {
-                itemPrice = createdEventPackages.find(ep => ep._id.equals(packageId)).price;
+                itemPrice = createdEventPackages.find((ep) => ep._id.equals(packageId)).price;
             }
 
             let confirmedBy = null;
@@ -289,7 +550,7 @@ const seedDatabase = async () => {
             }
 
             const payment = new Payment({
-                proof_url: faker.image.urlLoremFlickr({ category: 'abstract' }),
+                proof_url: faker.image.urlLoremFlickr({ category: "abstract" }),
                 amount: itemPrice,
                 status: status,
                 confirmed_by: confirmedBy,
@@ -310,9 +571,9 @@ const seedDatabase = async () => {
             const savedPayment = await payment.save();
             const savedRegistration = await registration.save();
 
-            if (status === 'confirmed') {
+            if (status === "confirmed") {
                 await Event.findByIdAndUpdate(event._id, {
-                    $inc: { registered_participant: 1 }
+                    $inc: { registered_participant: 1 },
                 });
             }
 
@@ -326,9 +587,9 @@ const seedDatabase = async () => {
         console.log("Seeding attendances...");
         const attendancesData = [];
         for (const reg of createdRegistrations) {
-            const paymentForReg = createdPayments.find(p => p._id.equals(reg.payment_id));
-            if (paymentForReg && paymentForReg.status === 'confirmed' && reg.detail_id) {
-                const eventDetail = createdEventDetails.find(ed => ed._id.equals(reg.detail_id));
+            const paymentForReg = createdPayments.find((p) => p._id.equals(reg.payment_id));
+            if (paymentForReg && paymentForReg.status === "confirmed" && reg.detail_id) {
+                const eventDetail = createdEventDetails.find((ed) => ed._id.equals(reg.detail_id));
                 if (eventDetail) {
                     const scannedAt = getSafeDateBetween(eventDetail.start_time, eventDetail.end_time);
                     const qrPlaintext = `${reg._id}:${reg.detail_id}`;
@@ -354,7 +615,7 @@ const seedDatabase = async () => {
             certificatesData.push({
                 registration_id: att.registration_id,
                 detail_id: att.detail_id,
-                certificate_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // ← online dummy PDF
+                certificate_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // Online dummy PDF
                 uploaded_by: defaultScannerOrUploader._id,
                 uploaded_at: faker.date.recent({ days: 7, refDate: currentDate }),
             });
@@ -378,13 +639,12 @@ const seedDatabase = async () => {
                 detail_id: null,
                 package_id: createdEventPackages[4]._id,
                 added_at: faker.date.recent({ days: 7, refDate: currentDate }),
-            }
+            },
         ];
         const createdCarts = await Cart.insertMany(cartsData);
         console.log(`${createdCarts.length} carts seeded.`);
 
         console.log("Database seeding completed successfully!");
-
     } catch (err) {
         console.error("Seeding failed catastrophically:", err);
     } finally {

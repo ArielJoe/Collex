@@ -168,6 +168,7 @@ class AdminController extends Controller
     // Show edit user form
     public function edit($id)
     {
+
         try {
             // Endpoint di Node.js adalah GET /api/users/:id
             $response = Http::get("{$this->apiBaseUrl}/{$id}");
@@ -185,7 +186,6 @@ class AdminController extends Controller
                 $user = $responseData['data'];
                 return view('admin.user.edit', compact('user'));
             }
-
             return redirect()->route('admin.user.index')->with('error', $responseData['message'] ?? 'Gagal mengambil data pengguna.');
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             Log::error("Admin User Edit - API connection error for user {$id}: " . $e->getMessage());
@@ -200,17 +200,17 @@ class AdminController extends Controller
     public function update(Request $request, $id)
     {
         $validatedData = $request->validate([
-            'full_name' => 'required|string|max:255',
-            'phone_number' => 'required|string|regex:/^\d{10,15}$/',
+            'full_name' => 'nullable',
+            'phone_number' => 'nullable',
             'email' => ['required', 'email', 'max:255'],
             'role' => ['required', Rule::in(['member', 'admin', 'finance', 'organizer'])],
-            'photo_url' => 'nullable|url|max:2048',
-            'is_active' => 'required|boolean',
-            'password' => 'nullable|string|min:6|confirmed', // Password opsional, jika diisi harus dikonfirmasi
+            'photo_url' => 'nullable',
+            'is_active' => 'nullable',
+            'password' => 'nullable', // Password opsional, jika diisi harus dikonfirmasi
         ]);
 
         // Hanya kirim password jika diisi
-        $payload = $validatedData;
+        $payload = $validatedData;  
         if (empty($validatedData['password'])) {
             unset($payload['password']);
         }

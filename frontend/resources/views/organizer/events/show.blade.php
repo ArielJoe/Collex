@@ -84,7 +84,7 @@
                                     Start Date & Time
                                 </h3>
                                 <p class="text-gray-600">
-                                    {{ isset($event['data']['start_time']) ? \Carbon\Carbon::parse($event['data']['start_time'])->format('l, F j, Y \a\t g:i A') : 'Not specified' }}
+                                    {{ isset($event['data']['start_time']) ? \Carbon\Carbon::parse($event['data']['start_time'])->setTimezone('Asia/Jakarta')->format('l, F j, Y \a\t g:i A') : 'Not specified' }}
                                 </p>
                             </div>
 
@@ -98,7 +98,7 @@
                                     End Date & Time
                                 </h3>
                                 <p class="text-gray-600">
-                                    {{ isset($event['data']['end_time']) ? \Carbon\Carbon::parse($event['data']['end_time'])->format('l, F j, Y \a\t g:i A') : 'Not specified' }}
+                                    {{ isset($event['data']['end_time']) ? \Carbon\Carbon::parse($event['data']['end_time'])->setTimezone('Asia/Jakarta')->format('l, F j, Y \a\t g:i A') : 'Not specified' }}
                                 </p>
                             </div>
 
@@ -112,7 +112,7 @@
                                     Registration Deadline
                                 </h3>
                                 <p class="text-gray-600">
-                                    {{ isset($event['data']['registration_deadline']) ? \Carbon\Carbon::parse($event['data']['registration_deadline'])->format('l, F j, Y \a\t g:i A') : 'Not specified' }}
+                                    {{ isset($event['data']['registration_deadline']) ? \Carbon\Carbon::parse($event['data']['registration_deadline'])->setTimezone('Asia/Jakarta')->format('l, F j, Y \a\t g:i A') : 'Not specified' }}
                                 </p>
                             </div>
 
@@ -158,9 +158,9 @@
                                                     <div>
                                                         <h5 class="text-sm font-medium text-gray-500">Time</h5>
                                                         <p class="text-gray-600">
-                                                            {{ \Carbon\Carbon::parse($detail['start_time'])->format('g:i A') }}
+                                                            {{ \Carbon\Carbon::parse($detail['start_time'])->setTimezone('Asia/Jakarta')->format('g:i A') }}
                                                             -
-                                                            {{ \Carbon\Carbon::parse($detail['end_time'])->format('g:i A, l, F j, Y') }}
+                                                            {{ \Carbon\Carbon::parse($detail['end_time'])->setTimezone('Asia/Jakarta')->format('g:i A, l, F j, Y') }}
                                                         </p>
                                                     </div>
                                                     <div>
@@ -235,7 +235,7 @@
                                 <li>
                                     <h4 class="text-sm font-medium text-gray-500">Created</h4>
                                     <p class="mt-1 text-sm text-gray-900">
-                                        {{ \Carbon\Carbon::parse($event['data']['created_at'])->format('M j, Y g:i A') }}
+                                        {{ \Carbon\Carbon::parse($event['data']['created_at'])->setTimezone('Asia/Jakarta')->format('M j, Y g:i A') }}
                                     </p>
                                 </li>
                             @endif
@@ -243,7 +243,7 @@
                                 <li>
                                     <h4 class="text-sm font-medium text-gray-500">Last Updated</h4>
                                     <p class="mt-1 text-sm text-gray-900">
-                                        {{ \Carbon\Carbon::parse($event['data']['updated_at'])->format('M j, Y g:i A') }}
+                                        {{ \Carbon\Carbon::parse($event['data']['updated_at'])->setTimezone('Asia/Jakarta')->format('M j, Y g:i A') }}
                                     </p>
                                 </li>
                             @endif
@@ -275,7 +275,7 @@
                         @php
                             $now = now();
                             $deadline = isset($event['data']['registration_deadline'])
-                                ? \Carbon\Carbon::parse($event['data']['registration_deadline'])
+                                ? \Carbon\Carbon::parse($event['data']['registration_deadline'])->setTimezone('Asia/Jakarta')
                                 : null;
                         @endphp
 

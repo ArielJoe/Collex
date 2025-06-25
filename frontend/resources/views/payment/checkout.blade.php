@@ -246,7 +246,8 @@
                             <div class="lg:col-span-1">
                                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 sticky top-8">
                                     <h3 class="text-lg font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-200">
-                                        Ringkasan Pesanan</h3>
+                                        Ringkasan Pesanan
+                                    </h3>
 
                                     <!-- Event Poster -->
                                     @php
@@ -276,9 +277,11 @@
                                                 <div class="flex items-start">
                                                     <div class="ml-3">
                                                         <p class="text-sm font-medium text-gray-800">
-                                                            {{ Str::limit($item['name'], 30) }}</p>
+                                                            {{ Str::limit($item['name'], 30) }}
+                                                        </p>
                                                         <p class="text-xs text-gray-500">
-                                                            {{ Str::limit($item['event_name'], 20) }}</p>
+                                                            {{ Str::limit($item['event_name'], 20) }}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             @endforeach
@@ -301,6 +304,24 @@
                                             <span class="text-xl font-bold text-red-600">Rp
                                                 {{ number_format($totalAmount, 0, ',', '.') }}</span>
                                         </div>
+                                    </div>
+
+                                    <!-- Payment Information -->
+                                    <div class="mt-6 border-t border-gray-200 pt-4">
+                                        <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Pembayaran</h4>
+                                        <p class="text-sm text-gray-600">Silakan lakukan pembayaran melalui transfer bank
+                                            ke rekening berikut:</p>
+                                        <div class="mt-2">
+                                            <p class="text-sm font-medium text-gray-700">Bank: <span
+                                                    class="font-normal">BCA</span></p>
+                                            <p class="text-sm font-medium text-gray-700">Nomor Rekening: <span
+                                                    class="font-normal">7840784078</span></p>
+                                            <p class="text-sm font-medium text-gray-700">Atas Nama: <span
+                                                    class="font-normal">Collex TBK</span></p>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-2">Pastikan Anda melakukan transfer sesuai
+                                            dengan total pembayaran di atas. Konfirmasi pembayaran dapat dilakukan melalui
+                                            [kontak atau link konfirmasi].</p>
                                     </div>
                                 </div>
                             </div>

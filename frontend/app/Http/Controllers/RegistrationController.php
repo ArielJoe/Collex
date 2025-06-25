@@ -23,8 +23,7 @@ class RegistrationController extends Controller
 
             if ($response->successful() && $response->json('success')) {
                 $tickets = $response->json('data');
-                // Debug output to verify qr_code is present
-                Log::info('Fetched tickets with QR codes:', ['tickets' => $tickets]);
+                Log::info('Fetched tickets with QR codes and attendance status:', ['tickets' => $tickets]);
             } else {
                 $error = $response->json('message') ?? 'Could not retrieve tickets at this time.';
                 Log::error('Node API Error for my-tickets: ' . $response->body());

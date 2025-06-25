@@ -49,25 +49,19 @@
                     <nav class="flex flex-col gap-2">
                         <!-- Faculty Filter -->
                         <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition active:text-red-600 active:font-medium"
-                            href="#"><i class="fas fa-university mr-2"></i>All Events</a>
-                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"><i
-                                class="fas fa-laptop-code mr-2"></i>FK</a>
-                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"><i
-                                class="fas fa-flask mr-2"></i>FKG</a>
-                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"><i
-                                class="fas fa-book mr-2"></i>FP</a>
-                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"><i
-                                class="fas fa-graduation-cap mr-2"></i>FTRC</a>
-                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"><i
-                                class="fas fa-chalkboard mr-2"></i>FHIK</a>
-                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"><i
-                                class="fas fa-building mr-2"></i>FHBD</a>
-
-                        <!-- Apply Filter Button -->
-                        {{-- <button type="button"
-                            class="mt-4 w-full bg-primary text-white rounded px-4 py-2 hover:bg-red-700 transition">
-                            Apply Filters
-                        </button> --}}
+                            href="#" data-faculty="">All Events</a>
+                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"
+                            data-faculty="FK"><i class="fas fa-laptop-code mr-2"></i>FK</a>
+                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"
+                            data-faculty="FKG"><i class="fas fa-flask mr-2"></i>FKG</a>
+                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"
+                            data-faculty="FP"><i class="fas fa-book mr-2"></i>FP</a>
+                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"
+                            data-faculty="FTRC"><i class="fas fa-graduation-cap mr-2"></i>FTRC</a>
+                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"
+                            data-faculty="FHIK"><i class="fas fa-chalkboard mr-2"></i>FHIK</a>
+                        <a class="faculty-link text-gray-500 text-sm py-2 hover:text-red-600 transition" href="#"
+                            data-faculty="FHBD"><i class="fas fa-building mr-2"></i>FHBD</a>
                     </nav>
                 </div>
             </div>
@@ -105,53 +99,18 @@
                         class="text-blue-900 font-semibold mb-6 pb-3 relative after:absolute after:bottom-0 after:left-0 after:w-12 after:h-1 after:bg-primary">
                         UPCOMING EVENTS
                     </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        @forelse ($events as $index => $eventArray)
-                            <div
-                                class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                                <img src="{{ $eventArray['poster_url'] }}" class="w-full h-44 object-cover"
-                                    alt="{{ $eventArray['name'] }}">
-                                <div class="p-4">
-                                    <h5 class="text-gray-900 text-base font-semibold mb-2">{{ $eventArray['name'] }}</h5>
-                                    <div class="text-red-600 text-sm mb-3 flex items-center">
-                                        <i class="far fa-calendar-alt mr-2"></i>
-                                        {{ \Carbon\Carbon::parse($eventArray['start_time'])->format('M d, Y • h:i A') }}
-                                    </div>
-                                    <div class="text-gray-500 text-sm mb-4 flex items-center">
-                                        <i class="fas fa-map-marker-alt mr-2"></i> {{ $eventArray['location'] }}
-                                    </div>
-                                    <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                                        <a href="{{ url('/event/' . $eventArray['_id']) }}"
-                                            class="bg-red-50 text-primary text-sm font-medium px-4 py-1 rounded-full hover:bg-primary hover:text-white transition">
-                                            Details
-                                        </a>
-                                    </div>
-                                    <div class="text-gray-600 text-xs mt-2">
-                                        Max Participants:
-                                        {{ $eventArray['max_participant'] }}
-                                    </div>
-                                </div>
-                            </div>
-                        @empty
-                            <p class="text-gray-500">No events found.</p>
-                        @endforelse
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="events-container">
+                        <!-- Events will be rendered here by JavaScript -->
                     </div>
 
-                    <!-- Pagination -->
-                    @if ($totalPages > 1)
-                        <div class="flex justify-center mt-8">
-                            <nav class="flex gap-2">
-                                @for ($i = 1; $i <= $totalPages; $i++)
-                                    <a href="{{ url('/') }}?page={{ $i }}&location={{ $locationFilter }}&keyword={{ $keyword }}&start_date={{ request('start_date') }}&end_date={{ request('end_date') }}&faculty={{ $faculty }}"
-                                        class="px-4 py-2 rounded {{ $currentPage == $i ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600' }} hover:bg-primary hover:text-white transition">
-                                        {{ $i }}
-                                    </a>
-                                @endfor
-                            </nav>
-                        </div>
-                    @endif
+                    <!-- Frontend Pagination -->
+                    <div class="flex justify-center mt-8" id="pagination-controls">
+                        <nav class="flex items-center gap-1">
+                            <!-- Pagination buttons will be rendered here -->
+                        </nav>
+                    </div>
 
-                    <div class="text-center mt-8">
+                    <div class="text-center mt-4">
                         <a href="{{ url('/events') }}"
                             class="text-red-600 font-medium hover:text-blue-900 hover:underline transition">
                             See more events <i class="fas fa-arrow-right ml-2"></i>
@@ -240,28 +199,167 @@
 
         // Faculty filter tabs
         const facultyLinks = document.querySelectorAll('.faculty-link');
+
+        // Frontend Pagination and Filtering
+        const eventsContainer = document.querySelector('#events-container');
+        const paginationControls = document.querySelector('#pagination-controls');
+        const itemsPerPage = 6;
+        let currentPage = 1;
+        let currentFaculty = ''; // Empty for all faculties
+
+        // Use fetched events data from backend
+        const allEvents = @json($events);
+        let filteredEvents = [...allEvents]; // Initial copy of all events
+
+        function filterEvents(faculty) {
+            currentFaculty = faculty;
+            if (!faculty) {
+                filteredEvents = [...allEvents]; // Show all events
+            } else {
+                filteredEvents = allEvents.filter(event =>
+                    event.faculty && event.faculty.some(f => f.code === faculty)
+                );
+            }
+            currentPage = 1; // Reset to first page on filter change
+            renderEvents(currentPage);
+            renderPagination();
+        }
+
+        function renderEvents(page) {
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedEvents = filteredEvents.slice(startIndex, endIndex);
+
+            eventsContainer.innerHTML = '';
+
+            if (paginatedEvents.length === 0) {
+                eventsContainer.innerHTML = '<p class="text-gray-500">No events found.</p>';
+                return;
+            }
+
+            paginatedEvents.forEach(event => {
+                const facultyCode = event.faculty[0]?.code || 'N/A';
+                const eventCard = `
+                    <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <img src="${event.poster_url || 'https://via.placeholder.com/300x200'}" class="w-full h-44 object-cover" alt="${event.name}">
+                        <div class="p-4">
+                            <h5 class="text-gray-900 text-base font-semibold mb-2">${event.name || event.full_name}</h5>
+                            <div class="text-red-600 text-sm mb-3 flex items-center">
+                                <i class="far fa-calendar-alt mr-2"></i>
+                                ${new Date(event.start_time).toLocaleString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                    hour: 'numeric',
+                                    minute: 'numeric',
+                                    hour12: true
+                                })}
+                            </div>
+                            <div class="text-gray-500 text-sm mb-4 flex items-center">
+                                <i class="fas fa-map-marker-alt mr-2"></i> ${event.location || 'N/A'}
+                            </div>
+                            <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                                <a href="/event/${event._id}"
+                                    class="bg-red-50 text-primary text-sm font-medium px-4 py-1 rounded-full hover:bg-primary hover:text-white transition">
+                                    Details
+                                </a>
+                            </div>
+                            <div class="text-gray-600 text-xs mt-2">
+                                Max Participants: ${event.max_participant || 'N/A'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                eventsContainer.innerHTML += eventCard;
+            });
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+            const nav = paginationControls.querySelector('nav');
+            nav.innerHTML = '';
+
+            // Previous Button
+            const prevButton = `
+                <a href="#" class="px-3 py-1 rounded border ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-600 hover:bg-gray-50'}" 
+                   ${currentPage === 1 ? '' : `onclick="changePage(${currentPage - 1})"`}>
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            `;
+            nav.innerHTML += prevButton;
+
+            // Page Numbers
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            startPage = Math.max(1, endPage - 4);
+
+            if (startPage > 1) {
+                nav.innerHTML += `
+                    <a href="#" class="px-3 py-1 rounded border bg-white text-gray-600 hover:bg-gray-50" onclick="changePage(1)">
+                        1
+                    </a>
+                `;
+                if (startPage > 2) {
+                    nav.innerHTML += '<span class="px-2">...</span>';
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                nav.innerHTML += `
+                    <a href="#" class="px-3 py-1 rounded border ${currentPage === i ? 'bg-primary text-white border-primary' : 'bg-white text-gray-600 hover:bg-gray-50'}" 
+                       onclick="changePage(${i})">
+                        ${i}
+                    </a>
+                `;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    nav.innerHTML += '<span class="px-2">...</span>';
+                }
+                nav.innerHTML += `
+                    <a href="#" class="px-3 py-1 rounded border bg-white text-gray-600 hover:bg-gray-50" onclick="changePage(${totalPages})">
+                        ${totalPages}
+                    </a>
+                `;
+            }
+
+            // Next Button
+            const nextButton = `
+                <a href="#" class="px-3 py-1 rounded border ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-600 hover:bg-gray-50'}" 
+                   ${currentPage === totalPages ? '' : `onclick="changePage(${currentPage + 1})"`}>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            `;
+            nav.innerHTML += nextButton;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderEvents(currentPage);
+            renderPagination();
+            eventsContainer.scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        // Initialize faculty filters
         facultyLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
+            link.addEventListener('click', (e) => {
                 e.preventDefault();
                 facultyLinks.forEach(l => l.classList.remove('active:text-red-600', 'active:font-medium'));
-                this.classList.add('active:text-red-600', 'active:font-medium');
+                link.classList.add('active:text-red-600', 'active:font-medium');
+                const faculty = link.getAttribute('data-faculty');
+                filterEvents(faculty);
             });
         });
 
-        // Filter form submission
-        document.querySelector('button[type="button"]').addEventListener('click', function() {
-            const formData = new FormData();
-            formData.append('faculty', document.querySelector('.faculty-link.active:text-red-600')?.textContent
-                .trim() || 'All Events');
-            formData.append('start_date', document.querySelector('input[name="start_date"]').value);
-            formData.append('end_date', document.querySelector('input[name="end_date"]').value);
-
-            fetch('{{ url('/') }}', {
-                method: 'GET',
-                body: formData
-            }).then(response => response.text()).then(html => {
-                document.querySelector('.w-full.lg\\:w-1\\/2.px-4.mb-6').innerHTML = html;
-            }).catch(error => console.error('Error:', error));
-        });
+        // Initial render
+        if (allEvents.length > 0) {
+            renderEvents(currentPage);
+            renderPagination();
+        } else {
+            eventsContainer.innerHTML = '<p class="text-gray-500">No events found.</p>';
+        }
     </script>
 @endpush

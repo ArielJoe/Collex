@@ -266,8 +266,8 @@
                                     <p>
                                         {{ isset($eventData['start_time']) ? \Carbon\Carbon::parse($eventData['start_time'])->locale('id')->isoFormat('dddd, D MMMM YYYY') : 'N/A' }}<br>
                                         Pukul
-                                        {{ isset($eventData['start_time']) ? \Carbon\Carbon::parse($eventData['start_time'])->isoFormat('HH:mm') : '' }}
-                                        {{ isset($eventData['end_time']) ? ' - ' . \Carbon\Carbon::parse($eventData['end_time'])->isoFormat('HH:mm') : '' }}
+                                        {{ isset($eventData['start_time']) ? \Carbon\Carbon::parse($eventData['start_time'])->setTimezone('Asia/Jakarta')->isoFormat('HH:mm') : '' }}
+                                        {{ isset($eventData['end_time']) ? ' - ' . \Carbon\Carbon::parse($eventData['end_time'])->setTimezone('Asia/Jakarta')->isoFormat('HH:mm') : '' }}
                                         WIB
                                     </p>
                                 </div>
@@ -283,7 +283,7 @@
                                 <div class="detail-icon"><i class="fas fa-flag-checkered"></i></div>
                                 <div class="detail-content">
                                     <h3>Batas Pendaftaran</h3>
-                                    <p>{{ isset($eventData['registration_deadline']) ? \Carbon\Carbon::parse($eventData['registration_deadline'])->locale('id')->isoFormat('dddd, D MMMM YYYY, HH:mm [WIB]') : 'N/A' }}
+                                    <p>{{ isset($eventData['registration_deadline']) ? \Carbon\Carbon::parse($eventData['registration_deadline'])->setTimezone('Asia/Jakarta')->isoFormat('dddd, D MMMM YYYY, HH:mm [WIB]') : 'N/A' }}
                                     </p>
                                 </div>
                             </div>
@@ -326,11 +326,11 @@
                                             </div>
                                             <div class="text-gray-600 space-y-1.5 text-sm mb-4">
                                                 <p><i class="far fa-calendar-alt w-5 text-center mr-2 text-gray-400"></i>
-                                                    {{ isset($detail['start_time']) ? \Carbon\Carbon::parse($detail['start_time'])->isoFormat('dddd, D MMMM') : 'Tanggal tidak tersedia' }}
+                                                    {{ isset($detail['start_time']) ? \Carbon\Carbon::parse($detail['start_time'])->setTimezone('Asia/Jakarta')->isoFormat('dddd, D MMMM') : 'Tanggal tidak tersedia' }}
                                                 </p>
                                                 <p><i class="far fa-clock w-5 text-center mr-2 text-gray-400"></i>
-                                                    {{ isset($detail['start_time']) ? \Carbon\Carbon::parse($detail['start_time'])->isoFormat('HH:mm') : '' }}
-                                                    {{ isset($detail['end_time']) ? ' - ' . \Carbon\Carbon::parse($detail['end_time'])->isoFormat('HH:mm') : '' }}
+                                                    {{ isset($detail['start_time']) ? \Carbon\Carbon::parse($detail['start_time'])->setTimezone('Asia/Jakarta')->isoFormat('HH:mm') : '' }}
+                                                    {{ isset($detail['end_time']) ? ' - ' . \Carbon\Carbon::parse($detail['end_time'])->setTimezone('Asia/Jakarta')->isoFormat('HH:mm') : '' }}
                                                     WIB
                                                 </p>
                                                 @if (isset($detail['location']) && !empty($detail['location']))

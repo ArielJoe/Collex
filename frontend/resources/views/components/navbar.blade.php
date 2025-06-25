@@ -40,8 +40,8 @@
                         </button>
                         <ul class="absolute right-0 mt-2 w-60 bg-white rounded-lg shadow-lg hidden py-1"
                             id="userDropdownMenu">
-                            <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="#"><i
-                                        class="fas fa-user mr-2"></i>Profile</a></li>
+                            {{-- <li><a class="block px-4 py-2 text-gray-700 hover:bg-gray-100" href="#"><i
+                                        class="fas fa-user mr-2"></i>Profile</a></li> --}}
                             @if (session('role') === 'member')
                                 <li>
                                     <a class="block px-4 py-3 text-gray-700 hover:bg-gray-100" href="/member">
@@ -143,8 +143,8 @@
                         <i class="fas fa-chevron-down text-xs"></i>
                     </button>
                     <ul class="w-full bg-gray-50 rounded-b-lg shadow-inner hidden pl-4" id="mobileUserDropdownMenu">
-                        <li><a class="block px-4 py-3 text-gray-700 hover:bg-gray-100" href="#"><i
-                                    class="fas fa-user mr-2"></i>Profile</a></li>
+                        {{-- <li><a class="block px-4 py-3 text-gray-700 hover:bg-gray-100" href="#"><i
+                                    class="fas fa-user mr-2"></i>Profile</a></li> --}}
                         @if (session('role') === 'member')
                             <li>
                                 <a class="block px-4 py-3 text-gray-700 hover:bg-gray-100" href="/member">

@@ -276,49 +276,118 @@ class OrganizerController extends Controller
 
     public function updateEvent(Request $request, $id)
     {
+        // Validasi data event utama
         $validatedData = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'location' => 'sometimes|required|string|max:255',
             'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'max_participants' => 'sometimes|required|integer|min:1', // Sesuai skema: max_participant
-            'faculty' => 'sometimes|required|string', // ID Fakultas
-            'registration_deadline' => 'sometimes|required|date_format:Y-m-d\TH:i', // Validasi after_or_equal:now bisa opsional saat update
+            'max_participants' => 'sometimes|required|integer|min:1',
+            'faculty' => 'sometimes|required|string',
+            'registration_deadline' => 'sometimes|required|date_format:Y-m-d\TH:i',
             'start_time' => 'sometimes|required|date_format:Y-m-d\TH:i',
             'end_time' => 'sometimes|required|date_format:Y-m-d\TH:i|after:start_time',
             'description' => 'nullable|string',
+            // Validasi untuk sessions
+            'sessions.*.id' => 'required|string', // id bisa "new" atau ObjectId
+            'sessions.*.title' => 'required|string|max:255',
+            'sessions.*.start_time' => 'required|date_format:Y-m-d\TH:i',
+            'sessions.*.end_time' => 'required|date_format:Y-m-d\TH:i|after:sessions.*.start_time',
+            'sessions.*.location' => 'required|string|max:255',
+            'sessions.*.speaker' => 'required|string|max:255',
+            'sessions.*.description' => 'required|string',
+            'sessions.*.price' => 'required|numeric',
         ]);
 
-        $payload = $request->only(array_keys($validatedData));
-
-        if ($request->hasFile('poster')) {
-            // Pertimbangkan untuk menghapus poster lama jika ada
-            $path = $request->file('poster')->store('public/event_posters');
-            $payload['poster_url'] = Storage::url($path);
-        }
-        if (isset($payload['poster'])) unset($payload['poster']);
-
-        // Validasi tanggal kondisional jika ada
-        if (isset($payload['start_time']) && isset($payload['registration_deadline'])) {
-            if (strtotime($payload['start_time']) <= strtotime($payload['registration_deadline'])) {
-                return back()->withInput()->withErrors(['start_time' => 'Waktu mulai event harus setelah batas waktu pendaftaran.']);
-            }
-        }
-        if (isset($payload['end_time']) && isset($payload['start_time'])) {
-            if (strtotime($payload['end_time']) <= strtotime($payload['start_time'])) {
-                return back()->withInput()->withErrors(['end_time' => 'Waktu selesai event harus setelah waktu mulai.']);
-            }
-        }
-
         try {
-            $response = Http::put("{$this->apiBaseUrl}/{$id}", $payload); // PUT ke /api/events/{id}
+            // Proses data event utama
+            $payload = $request->only(array_keys($validatedData));
+            unset($payload['sessions']); // Hapus sessions dari payload event utama
+
+            if ($request->hasFile('poster')) {
+                $path = $request->file('poster')->store('public/event_posters');
+                $payload['poster_url'] = Storage::url($path);
+            }
+            unset($payload['poster']);
+
+            // Validasi tanggal kondisional
+            if (isset($payload['start_time']) && isset($payload['registration_deadline'])) {
+                if (strtotime($payload['start_time']) <= strtotime($payload['registration_deadline'])) {
+                    return back()->withInput()->withErrors(['start_time' => 'Waktu mulai event harus setelah batas waktu pendaftaran.']);
+                }
+            }
+            if (isset($payload['end_time']) && isset($payload['start_time'])) {
+                if (strtotime($payload['end_time']) <= strtotime($payload['start_time'])) {
+                    return back()->withInput()->withErrors(['end_time' => 'Waktu selesai event harus setelah waktu mulai.']);
+                }
+            }
+
+            // Update event utama
+            $response = Http::put("{$this->apiBaseUrl}/{$id}", $payload);
             $responseData = $response->json();
 
-            if ($response->successful() && isset($responseData['success']) && $responseData['success'] === true) {
-                return redirect()->route('organizer.events.index')->with('success', $responseData['message'] ?? 'Event berhasil diperbarui.');
+            if ($response->failed() || !isset($responseData['success']) || !$responseData['success']) {
+                Log::error("Organizer Update Event - API request for event {$id} failed: " . $response->body());
+                return back()->withInput()->with('error', $responseData['message'] ?? 'Gagal memperbarui event.');
             }
 
-            Log::error("Organizer Update Event - API request for event {$id} failed: " . $response->body());
-            return back()->withInput()->with('error', $responseData['message'] ?? 'Gagal memperbarui event.');
+            // Ambil daftar sesi yang sudah ada dari API
+            $existingDetailsResponse = Http::get(rtrim(env('API_BASE_URL', 'http://localhost:5000'), '/') . "/api/event-details/by-event/{$id}");
+            $existingDetails = [];
+            if ($existingDetailsResponse->successful() && isset($existingDetailsResponse->json()['data'])) {
+                $existingDetails = $existingDetailsResponse->json()['data'];
+            } else {
+                Log::warning("Failed to fetch existing event details for event {$id}: " . $existingDetailsResponse->body());
+            }
+
+            // Proses sesi
+            $submittedSessionIds = collect($request->input('sessions', []))->pluck('id')->toArray();
+            $existingSessionIds = collect($existingDetails)->pluck('_id')->toArray();
+
+            // Sesi yang dihapus: ada di database tapi tidak ada di form
+            $sessionsToDelete = array_diff($existingSessionIds, $submittedSessionIds);
+
+            // Hapus sesi yang tidak ada di form
+            foreach ($sessionsToDelete as $detailId) {
+                $deleteResponse = Http::delete(rtrim(env('API_BASE_URL', 'http://localhost:5000'), '/') . "/api/event/details/{$detailId}");
+                if ($deleteResponse->failed()) {
+                    Log::error("Failed to delete session {$detailId}: " . $deleteResponse->body());
+                    return back()->withInput()->with('error', 'Gagal menghapus sesi.');
+                }
+            }
+
+            // Proses sesi yang dikirim
+            foreach ($request->input('sessions', []) as $session) {
+                $sessionPayload = [
+                    'event_id' => $id,
+                    'title' => $session['title'],
+                    'start_time' => $session['start_time'],
+                    'end_time' => $session['end_time'],
+                    'location' => $session['location'],
+                    'speaker' => $session['speaker'],
+                    'description' => $session['description'],
+                    'price' => $session['price'],
+                ];
+
+                if ($session['id'] === 'new') {
+                    // Tambah sesi baru
+                    $detailResponse = Http::post(rtrim(env('API_BASE_URL', 'http://localhost:5000'), '/') . '/api/event/details', $sessionPayload);
+                    $detailResponseData = $detailResponse->json();
+                    if ($detailResponse->failed() || !isset($detailResponseData['success']) || !$detailResponseData['success']) {
+                        Log::error('Detail creation failed: ' . $detailResponse->body());
+                        return back()->withInput()->with('error', $detailResponseData['message'] ?? 'Gagal menambahkan sesi baru.');
+                    }
+                } else {
+                    // Update sesi yang sudah ada
+                    $detailResponse = Http::put(rtrim(env('API_BASE_URL', 'http://localhost:5000'), '/') . "/api/event/details/{$session['id']}", $sessionPayload);
+                    $detailResponseData = $detailResponse->json();
+                    if ($detailResponse->failed() || !isset($detailResponseData['success']) || !$detailResponseData['success']) {
+                        Log::error("Detail update failed for session {$session['id']}: " . $detailResponse->body());
+                        return back()->withInput()->with('error', $detailResponseData['message'] ?? 'Gagal memperbarui sesi.');
+                    }
+                }
+            }
+
+            return redirect()->route('organizer.events.index')->with('success', 'Event dan sesi berhasil diperbarui.');
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             Log::error("Organizer Update Event - API connection error for event {$id}: " . $e->getMessage());
             return back()->withInput()->with('error', 'Tidak dapat terhubung ke layanan event.');
@@ -355,16 +424,25 @@ class OrganizerController extends Controller
             $response = Http::get('http://localhost:5000/api/certificates/eligible/' . session()->get('userId'));
             $data = $response->json();
 
-            if (!$response->successful()) {
-                return back()->with('error', 'Gagal mengambil data registrasi peserta.');
+            if (!$response->successful() || !isset($data['success']) || !$data['success']) {
+                return back()->with('error', 'Gagal mengambil data registrasi peserta yang telah hadir.');
+            }
+
+            $registrations = $data['data'] ?? [];
+
+            if (empty($registrations)) {
+                return view('organizer.certificates.create', [
+                    'registrations' => [],
+                    'info' => 'Tidak ada peserta yang telah hadir untuk acara yang telah selesai.'
+                ]);
             }
 
             return view('organizer.certificates.create', [
-                'registrations' => $data['data']
+                'registrations' => $registrations
             ]);
         } catch (\Exception $e) {
             Log::error('Gagal mengambil registrasi: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan.');
+            return back()->with('error', 'Terjadi kesalahan saat mengambil data registrasi.');
         }
     }
 

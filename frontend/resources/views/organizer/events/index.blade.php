@@ -141,17 +141,17 @@
                                                 <div class="text-sm font-medium text-gray-900">
                                                     {{ $event['name'] ?? 'Untitled Event' }}</div>
                                                 <div class="text-sm text-gray-500">
-                                                    {{ isset($event['start_time']) ? \Carbon\Carbon::parse($event['start_time'])->format('M d, Y') : 'N/A' }}
+                                                    {{ isset($event['start_time']) ? \Carbon\Carbon::parse($event['start_time'])->setTimezone('Asia/Jakarta')->format('M d, Y') : 'N/A' }}
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">
-                                            {{ isset($event['start_time']) ? \Carbon\Carbon::parse($event['start_time'])->format('h:i A') : 'N/A' }}
+                                            {{ isset($event['start_time']) ? \Carbon\Carbon::parse($event['start_time'])->setTimezone('Asia/Jakarta')->format('h:i A') : 'N/A' }}
                                             @if (isset($event['end_time']))
                                                 <span class="text-gray-500"> -
-                                                    {{ \Carbon\Carbon::parse($event['end_time'])->format('h:i A') }}</span>
+                                                    {{ \Carbon\Carbon::parse($event['end_time'])->setTimezone('Asia/Jakarta')->format('h:i A') }}</span>
                                             @endif
                                         </div>
                                     </td>
